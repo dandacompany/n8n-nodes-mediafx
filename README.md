@@ -20,10 +20,19 @@ This repository contains a custom n8n node for comprehensive, local media proces
 ## Features
 
 -   **Video Processing**: Merge multiple clips, trim sections, apply cross-fade transitions, and add fade-in/out effects.
--   **Audio Manipulation**: Extract audio from video, and mix in new audio tracks with options for volume control, full track mixing, or partial mixing over specific durations.
+-   **Advanced Audio Manipulation**: 
+    - Extract audio from video in multiple formats (MP3, WAV, AAC, FLAC)
+    - Mix audio tracks with precise volume control for each source
+    - **Partial Audio Mixing**: Insert audio at specific time ranges with start time and duration control
+    - **Audio Looping**: Automatically loop shorter audio to match desired duration
+    - **Fade Effects**: Apply fade-in and fade-out effects to mixed audio with customizable duration
 -   **Image Operations**: Convert images into video clips with custom dimensions and duration. Overlay images as watermarks with control over position and opacity.
--   **Text and Subtitles**: Burn text overlays onto videos with extensive styling options (font, size, color, position, background box). Add and style external subtitle files (`.srt`).
--   **Font Management**: Upload, list, preview, and delete your own custom fonts (TTF, OTF) to be used in text operations.
+-   **Enhanced Text and Subtitles**: 
+    - Burn text overlays with extensive styling (font, size, color, outline, background box)
+    - **Smart Positioning**: Use alignment presets (left/center/right, top/middle/bottom) or custom coordinates
+    - **Padding Controls**: Separate horizontal and vertical padding from edges
+    - Add and style external subtitle files (`.srt`) with the same text styling options
+-   **Font Management**: Upload, list, preview, validate, and delete your own custom fonts (TTF, OTF) to be used in text operations.
 
 ## Installation for n8n
 
@@ -56,8 +65,13 @@ This is the main node for all media processing operations. You select a `resourc
 -   `Stamp Image`: Overlay an image (watermark) on the video.
 
 #### **Audio** Resource
--   `Extract`: Extract the audio track from a video file into a specified format (e.g., mp3, aac).
--   `Mix Audio`: Mix a primary video's audio with a secondary audio source. Includes advanced options to mix into a specific time segment with looping.
+-   `Extract`: Extract the audio track from a video file into a specified format (MP3, WAV, AAC, FLAC).
+-   `Mix Audio`: Mix a primary video's audio with a secondary audio source with advanced features:
+    - **Volume Control**: Independent volume adjustment for both primary and secondary sources
+    - **Full Mix Mode**: Mix audio across the entire duration (shortest/longest/first source)
+    - **Partial Mix Mode**: Insert audio at specific time ranges with precise start time and duration
+    - **Audio Looping**: Automatically repeat shorter audio to fill the specified duration
+    - **Fade Effects**: Apply fade-in and fade-out effects with customizable duration
 
 #### **Image** Resource
 -   `Image to Video`: Create a video from a source image, specifying duration and output dimensions.
@@ -95,40 +109,50 @@ Create a 10-second video at 1920x1080 from a single image.
 }
 ```
 
-### Advanced Audio Mix
-Mix `new_audio.mp3` into `main_video.mp4`, starting at the 15-second mark for a duration of 30 seconds, and loop the new audio if it's shorter than 30s.
+### Advanced Audio Mix with Fade Effects
+Mix `new_audio.mp3` into `main_video.mp4`, starting at the 15-second mark for a duration of 30 seconds, with looping and fade effects.
 
 ```json
 {
   "resource": "audio",
   "operation": "mixAudio",
-  "mixVideoSource": { "source": { "value": "/path/to/main_video.mp4" } },
-  "mixAudioSource": { "source": { "value": "/path/to/new_audio.mp3" } },
+  "mixVideoSourceType": "url",
+  "mixVideoSourceUrl": "/path/to/main_video.mp4",
+  "mixAudioSourceType": "url", 
+  "mixAudioSourceUrl": "/path/to/new_audio.mp3",
   "videoVolume": 1.0,
   "audioVolume": 0.5,
-  "advancedMixing": {
-    "enablePartialMix": true,
-    "startTime": 15,
-    "duration": 30,
-    "loop": true
-  }
+  "enablePartialMix": true,
+  "startTime": 15,
+  "duration": 30,
+  "loop": true,
+  "enableFadeIn": true,
+  "fadeInDuration": 2,
+  "enableFadeOut": true,
+  "fadeOutDuration": 3
 }
 ```
 
-### Add Text Overlay with Custom Font
-Add text to a video using a pre-uploaded custom font.
+### Add Text Overlay with Smart Positioning
+Add text to a video using alignment presets and custom styling.
 
 ```json
 {
-  "resource": "video",
+  "resource": "subtitle",
   "operation": "addText",
-  "source": { "source": { "binaryProperty": "data" } },
-  "text": "Hello, Custom Fonts!",
+  "source": { "source": { "sourceType": "binary", "binaryProperty": "data" } },
   "textOptions": {
-    "font": "my-custom-font",
+    "text": "Hello, Custom Fonts!",
+    "fontKey": "my-custom-font",
     "size": 48,
     "color": "yellow",
-    "position": { "x": "(w-text_w)/2", "y": "h-th-20" }
+    "positionType": "alignment",
+    "horizontalAlign": "center",
+    "verticalAlign": "bottom",
+    "paddingX": 20,
+    "paddingY": 50,
+    "startTime": 0,
+    "endTime": 10
   }
 }
 ```
@@ -147,6 +171,26 @@ If you wish to contribute to this node:
 3. Build the node with `npm run build`.
 4. For development, use `npm run dev` to watch for changes and automatically rebuild.
 5. [Link your local repository to your n8n nodes directory.](https://docs.n8n.io/integrations/creating-nodes/test-node/#linking-the-node)
+
+## Repository
+
+**GitHub**: [https://github.com/dandacompany/n8n-nodes-mediafx](https://github.com/dandacompany/n8n-nodes-mediafx)
+
+## Developer
+
+**Developer**: Dante  
+**Email**: datapod.k@gmail.com  
+**YouTube Channel**: [단테랩스 (DanteLabs)](https://www.youtube.com/@단테랩스)
+
+## Contributing
+
+We welcome contributions! Please feel free to submit issues, feature requests, or pull requests on our [GitHub repository](https://github.com/dandacompany/n8n-nodes-mediafx).
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/dandacompany/n8n-nodes-mediafx/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/dandacompany/n8n-nodes-mediafx/discussions)
+- **YouTube**: Check out tutorials and demos on [단테랩스](https://www.youtube.com/@단테랩스)
 
 ## License
 

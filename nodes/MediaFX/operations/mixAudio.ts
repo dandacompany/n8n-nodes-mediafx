@@ -136,15 +136,32 @@ export async function executeMixAudio(
 		// Standard full audio mix with fade effects
 		let audioProcessingChain = '[1:a]';
 		
+		// Calculate the effective duration based on matchLength
+		const videoDuration = await getDuration(actualVideoPath);
+		const audioDuration = await getDuration(audioPath);
+		
+		let effectiveDuration: number;
+		switch (matchLength) {
+			case 'shortest':
+				effectiveDuration = Math.min(videoDuration, audioDuration);
+				break;
+			case 'longest':
+				effectiveDuration = Math.max(videoDuration, audioDuration);
+				break;
+			case 'first':
+			default:
+				effectiveDuration = videoDuration;
+				break;
+		}
+		
 		// Apply fade effects if enabled
 		const fadeFilters = [];
 		if (enableFadeIn) {
 			fadeFilters.push(`afade=t=in:st=0:d=${fadeInDuration}`);
 		}
 		if (enableFadeOut) {
-			// For full mix, we need to get the audio duration to calculate fade out start
-			const audioDuration = await getDuration(audioPath);
-			const fadeOutStart = Math.max(0, audioDuration - fadeOutDuration);
+			// Calculate fade out start based on effective duration, not original audio duration
+			const fadeOutStart = Math.max(0, effectiveDuration - fadeOutDuration);
 			fadeFilters.push(`afade=t=out:st=${fadeOutStart}:d=${fadeOutDuration}`);
 		}
 		

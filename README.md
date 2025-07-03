@@ -26,7 +26,11 @@ This repository contains a custom n8n node for comprehensive, local media proces
     - **Partial Audio Mixing**: Insert audio at specific time ranges with start time and duration control
     - **Audio Looping**: Automatically loop shorter audio to match desired duration
     - **Independent Fade Effects**: Apply fade-in and fade-out effects with customizable duration for both full and partial mixing
--   **Image Operations**: Convert images into video clips with custom dimensions and duration. Overlay images as watermarks with control over position and opacity.
+-   **Advanced Image Operations**: 
+    - Convert images into video clips with custom dimensions and duration
+    - **Smart Watermarks**: Control position, size, rotation, and opacity
+    - **Time Control**: Display watermarks for specific time ranges or entire video
+    - **Fade Effects**: Apply fade-in and fade-out effects to watermarks
 -   **Enhanced Text and Subtitles**: 
     - Burn text overlays with extensive styling (font, size, color, outline, background box)
     - **Smart Positioning**: Use alignment presets (left/center/right, top/middle/bottom) or custom coordinates
@@ -75,7 +79,11 @@ This is the main node for all media processing operations. You select a `resourc
 
 #### **Image** Resource
 -   `Image to Video`: Create a video from a source image, specifying duration and output dimensions.
--   `Stamp Image`: Overlay an image onto a video with positioning and opacity options.
+-   `Stamp Image`: Advanced watermarking functionality to overlay images on videos:
+    - **Position & Size Control**: Precise pixel positioning and sizing
+    - **Rotation & Opacity**: Angle adjustment and transparency control
+    - **Time Control**: Display for specific time ranges or entire video duration
+    - **Fade Effects**: Smooth fade-in and fade-out transitions for watermark appearance
 
 #### **Transition** Resource
 -   `Apply`: Apply a transition effect between two or more video clips.
@@ -154,6 +162,35 @@ Add text to a video using alignment presets and custom styling.
     "startTime": 0,
     "endTime": 10
   }
+}
+```
+
+### Advanced Watermark Stamping
+Apply a watermark with fade effects for a specific time range.
+
+```json
+{
+  "resource": "image",
+  "operation": "stampImage",
+  "sourceVideo": {
+    "source": { "sourceType": "binary", "binaryProperty": "data" }
+  },
+  "stampImage": {
+    "source": { "sourceType": "binary", "binaryProperty": "watermark" }
+  },
+  "width": 200,
+  "height": -1,
+  "x": "(main_w-overlay_w)-20",
+  "y": "20",
+  "rotation": 15,
+  "opacity": 0.8,
+  "enableTimeControl": true,
+  "startTime": 5,
+  "endTime": 25,
+  "enableFadeIn": true,
+  "fadeInDuration": 2,
+  "enableFadeOut": true,
+  "fadeOutDuration": 2
 }
 ```
 

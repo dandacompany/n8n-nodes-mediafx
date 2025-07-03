@@ -125,7 +125,6 @@ export const imageProperties: INodeProperties[] = [
 		default: 'mp4',
 	},
 
-
 	// =============================
 	// == STAMP IMAGE FIELDS ==
 	// =============================
@@ -185,54 +184,196 @@ export const imageProperties: INodeProperties[] = [
 			},
 		],
 	},
+
+	// =============================
+	// == STAMP OPTIONS (Individual Properties) ==
+	// =============================
+	
+	// Size Options
 	{
-		displayName: 'Stamp Options',
-		name: 'stampOptions',
-		type: 'collection',
-		placeholder: 'Add Stamp Option',
+		displayName: 'Width (pixels)',
+		name: 'width',
+		type: 'number',
+		default: 150,
 		displayOptions: {
 			show: {
 				resource: ['image'],
 				operation: ['stampImage'],
 			},
 		},
-		default: {},
-		options: [
-			{
-				displayName: 'Width (pixels)',
-				name: 'width',
-				type: 'number',
-				default: 150,
-				description: 'Width of the stamp image. Use -1 to keep aspect ratio.',
+		description: 'Width of the stamp image. Use -1 to keep aspect ratio.',
+	},
+	{
+		displayName: 'Height (pixels)',
+		name: 'height',
+		type: 'number',
+		default: -1,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
 			},
-			{
-				displayName: 'Height (pixels)',
-				name: 'height',
-				type: 'number',
-				default: -1,
-				description: 'Height of the stamp image. Use -1 to keep aspect ratio.',
+		},
+		description: 'Height of the stamp image. Use -1 to keep aspect ratio.',
+	},
+	
+	// Position Options
+	{
+		displayName: 'Position X',
+		name: 'x',
+		type: 'string',
+		default: '10',
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
 			},
-			{
-				displayName: 'Position X',
-				name: 'x',
-				type: 'string',
-				default: '10',
-				description: "Position from left. E.g., '10' (pixels) or '(main_w-overlay_w)-10' (right align).",
+		},
+		description: "Position from left. E.g., '10' (pixels) or '(main_w-overlay_w)-10' (right align).",
+	},
+	{
+		displayName: 'Position Y',
+		name: 'y',
+		type: 'string',
+		default: '10',
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
 			},
-			{
-				displayName: 'Position Y',
-				name: 'y',
-				type: 'string',
-				default: '10',
-				description: "Position from top. E.g., '10' (pixels) or '(main_h-overlay_h)-10' (bottom align).",
+		},
+		description: "Position from top. E.g., '10' (pixels) or '(main_h-overlay_h)-10' (bottom align).",
+	},
+	{
+		displayName: 'Rotation (degrees)',
+		name: 'rotation',
+		type: 'number',
+		default: 0,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
 			},
-			{
-				displayName: 'Rotation (degrees)',
-				name: 'rotation',
-				type: 'number',
-				default: 0,
-				description: 'Rotation angle of the stamp in degrees (clockwise).',
+		},
+		description: 'Rotation angle of the stamp in degrees (clockwise).',
+	},
+	
+	// Time Control Options
+	{
+		displayName: 'Enable Time Control',
+		name: 'enableTimeControl',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
 			},
-		],
+		},
+		description: 'Control when the stamp appears and disappears',
+	},
+	{
+		displayName: 'Start Time (seconds)',
+		name: 'startTime',
+		type: 'number',
+		default: 0,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+				enableTimeControl: [true],
+			},
+		},
+		description: 'When the stamp should start appearing',
+	},
+	{
+		displayName: 'End Time (seconds)',
+		name: 'endTime',
+		type: 'number',
+		default: 5,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+				enableTimeControl: [true],
+			},
+		},
+		description: 'When the stamp should stop appearing. Leave empty for entire video duration.',
+	},
+	
+	// Fade Effects
+	{
+		displayName: 'Enable Fade In',
+		name: 'enableFadeIn',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+			},
+		},
+		description: 'Apply fade in effect to the stamp',
+	},
+	{
+		displayName: 'Fade In Duration (seconds)',
+		name: 'fadeInDuration',
+		type: 'number',
+		default: 1,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+				enableFadeIn: [true],
+			},
+		},
+		description: 'Duration of fade in effect in seconds',
+	},
+	{
+		displayName: 'Enable Fade Out',
+		name: 'enableFadeOut',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+			},
+		},
+		description: 'Apply fade out effect to the stamp',
+	},
+	{
+		displayName: 'Fade Out Duration (seconds)',
+		name: 'fadeOutDuration',
+		type: 'number',
+		default: 1,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+				enableFadeOut: [true],
+			},
+		},
+		description: 'Duration of fade out effect in seconds',
+	},
+	
+	// Opacity Control
+	{
+		displayName: 'Opacity',
+		name: 'opacity',
+		type: 'number',
+		default: 1.0,
+		typeOptions: {
+			minValue: 0,
+			maxValue: 1,
+			numberStepSize: 0.1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['stampImage'],
+			},
+		},
+		description: 'Opacity of the stamp (0.0 = transparent, 1.0 = opaque)',
 	},
 ]; 

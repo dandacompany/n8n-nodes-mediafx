@@ -511,7 +511,23 @@ export class MediaFX implements INodeType {
 								value: string;
 								binaryProperty?: string;
 							};
-							const stampOptions = this.getNodeParameter('stampOptions', i) as IDataObject;
+							
+							// Get individual stamp options
+							const stampOptions: IDataObject = {
+								width: this.getNodeParameter('width', i, 150),
+								height: this.getNodeParameter('height', i, -1),
+								x: this.getNodeParameter('x', i, '10'),
+								y: this.getNodeParameter('y', i, '10'),
+								rotation: this.getNodeParameter('rotation', i, 0),
+								enableTimeControl: this.getNodeParameter('enableTimeControl', i, false),
+								startTime: this.getNodeParameter('startTime', i, 0),
+								endTime: this.getNodeParameter('endTime', i, 5),
+								enableFadeIn: this.getNodeParameter('enableFadeIn', i, false),
+								fadeInDuration: this.getNodeParameter('fadeInDuration', i, 1),
+								enableFadeOut: this.getNodeParameter('enableFadeOut', i, false),
+								fadeOutDuration: this.getNodeParameter('fadeOutDuration', i, 1),
+								opacity: this.getNodeParameter('opacity', i, 1.0),
+							};
 
 							const { paths: videoPaths, cleanup: videoCleanup } = await resolveInputs(this, i, [
 								sourceVideo,

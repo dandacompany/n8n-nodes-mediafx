@@ -161,6 +161,33 @@ Add text to a video using alignment presets and custom styling.
 
 -   n8n: Version 1.0 or higher recommended.
 -   Node.js: Version 16+.
+-   FFmpeg: Automatically included via `ffmpeg-static`, but manual installation may be required on some systems.
+
+### FFmpeg Installation
+
+The node includes FFmpeg via the `ffmpeg-static` package, but if you encounter FFmpeg-related errors on your server, you may need to install FFmpeg manually:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update && sudo apt install ffmpeg
+```
+
+**CentOS/RHEL/Rocky Linux:**
+```bash
+sudo yum install epel-release && sudo yum install ffmpeg
+# or for newer versions:
+sudo dnf install ffmpeg
+```
+
+**Alpine Linux (Docker):**
+```bash
+apk add ffmpeg
+```
+
+**macOS:**
+```bash
+brew install ffmpeg
+```
 
 ## Development
 

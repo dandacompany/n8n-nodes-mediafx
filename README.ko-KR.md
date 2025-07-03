@@ -161,6 +161,33 @@
 
 -   n8n: 버전 1.0 이상 권장.
 -   Node.js: 버전 16 이상.
+-   FFmpeg: `ffmpeg-static` 패키지를 통해 자동으로 포함되지만, 일부 시스템에서는 수동 설치가 필요할 수 있습니다.
+
+### FFmpeg 설치
+
+노드는 `ffmpeg-static` 패키지를 통해 FFmpeg를 포함하고 있지만, 서버에서 FFmpeg 관련 오류가 발생하는 경우 수동으로 FFmpeg를 설치해야 할 수 있습니다:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update && sudo apt install ffmpeg
+```
+
+**CentOS/RHEL/Rocky Linux:**
+```bash
+sudo yum install epel-release && sudo yum install ffmpeg
+# 또는 최신 버전의 경우:
+sudo dnf install ffmpeg
+```
+
+**Alpine Linux (Docker):**
+```bash
+apk add ffmpeg
+```
+
+**macOS:**
+```bash
+brew install ffmpeg
+```
 
 ## 개발
 

@@ -1,7 +1,7 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import ffmpeg = require('fluent-ffmpeg');
 import * as fs from 'fs-extra';
-import { getTempFile, runFfmpeg, fileHasAudio, getVideoStreamInfo, getDuration, createSilentAudio } from '../utils';
+import { getTempFile, runFfmpeg, fileHasAudio, getVideoStreamInfo, getDuration, createSilentAudio, verifyFfmpegAvailability } from '../utils';
 
 async function normalizeVideo(
 	this: IExecuteFunctions,
@@ -58,6 +58,17 @@ export async function executeMerge(
 	outputFormat: string,
 	itemIndex: number,
 ): Promise<string> {
+	// Verify FFmpeg is available before proceeding
+	try {
+		verifyFfmpegAvailability();
+	} catch (error) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`FFmpeg is not available: ${(error as Error).message}`,
+			{ itemIndex }
+		);
+	}
+
 	if (inputs.length < 1) {
 		throw new NodeOperationError(this.getNode(), 'Merge operation requires at least one source.', {
 			itemIndex,

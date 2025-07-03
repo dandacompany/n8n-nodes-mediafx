@@ -1,5 +1,5 @@
 import { IDataObject, IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
-import { getTempFile, runFfmpeg, fileHasAudio, createSilentAudio, getDuration } from '../utils';
+import { getTempFile, runFfmpeg, fileHasAudio, createSilentAudio, getDuration, verifyFfmpegAvailability } from '../utils';
 import ffmpeg = require('fluent-ffmpeg');
 
 export async function executeMixAudio(
@@ -12,6 +12,17 @@ export async function executeMixAudio(
 	advancedMixing: IDataObject,
 	itemIndex: number,
 ): Promise<string> {
+	// Verify FFmpeg is available before proceeding
+	try {
+		verifyFfmpegAvailability();
+	} catch (error) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`FFmpeg is not available: ${(error as Error).message}`,
+			{ itemIndex }
+		);
+	}
+
 	const outputPath = getTempFile('.mp4');
 	
 	const {

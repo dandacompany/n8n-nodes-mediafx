@@ -6,17 +6,74 @@ import axios from 'axios';
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import { IDataObject } from 'n8n-workflow';
 
-// eslint-disable-next-line n8n-nodes-base/node-dirname-against-project-path
-const ffmpegPath = require('ffmpeg-static');
+// Initialize FFmpeg with better error handling
+let ffmpegPath: string | null = null;
 
-if (ffmpegPath) {
-	ffmpeg.setFfmpegPath(ffmpegPath);
-} else {
-	console.error('ffmpeg-static path not found. Please ensure it is installed.');
+try {
+	// eslint-disable-next-line n8n-nodes-base/node-dirname-against-project-path
+	ffmpegPath = require('ffmpeg-static');
+	
+	if (ffmpegPath && fs.existsSync(ffmpegPath)) {
+		ffmpeg.setFfmpegPath(ffmpegPath);
+		console.log(`FFmpeg initialized at: ${ffmpegPath}`);
+	} else {
+		console.error('ffmpeg-static binary not found at expected path:', ffmpegPath);
+		// Try to find ffmpeg in system PATH as fallback
+		try {
+			const { execSync } = require('child_process');
+			const systemFfmpegPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
+			if (systemFfmpegPath) {
+				ffmpeg.setFfmpegPath(systemFfmpegPath);
+				console.log(`Using system FFmpeg at: ${systemFfmpegPath}`);
+			}
+		} catch (error) {
+			console.error('System FFmpeg also not found. Please install FFmpeg or ensure ffmpeg-static is properly installed.');
+		}
+	}
+} catch (error) {
+	console.error('Error initializing ffmpeg-static:', error);
+	// Try to find ffmpeg in system PATH as fallback
+	try {
+		const { execSync } = require('child_process');
+		const systemFfmpegPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
+		if (systemFfmpegPath) {
+			ffmpeg.setFfmpegPath(systemFfmpegPath);
+			console.log(`Using system FFmpeg at: ${systemFfmpegPath}`);
+		}
+	} catch (fallbackError) {
+		console.error('FFmpeg not found in system PATH either:', fallbackError);
+	}
 }
 
 const TEMP_DIR = path.resolve(__dirname, '..', '..', 'temp_mediafx');
 fs.ensureDirSync(TEMP_DIR);
+
+// Function to verify FFmpeg is available
+export function verifyFfmpegAvailability(): void {
+	try {
+		// Try to get FFmpeg version to verify it's working
+		const { execSync } = require('child_process');
+		let testPath = ffmpegPath;
+		
+		if (!testPath) {
+			// Try to find ffmpeg in PATH
+			try {
+				testPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
+			} catch {
+				testPath = 'ffmpeg'; // fallback
+			}
+		}
+		
+		execSync(`"${testPath}" -version`, { stdio: 'pipe', timeout: 5000 });
+	} catch (error) {
+		throw new Error(
+			'FFmpeg is not available or not working properly. ' +
+			'Please ensure FFmpeg is installed on your system or that ffmpeg-static package is properly installed. ' +
+			'You may need to install FFmpeg manually on your server. ' +
+			`Error: ${(error as Error).message}`
+		);
+	}
+}
 
 export function getTempFile(extension: string): string {
 	return path.join(TEMP_DIR, `${uuidv4()}${extension}`);

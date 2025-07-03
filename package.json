@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-mediafx",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "N8N custom nodes for video editing and media processing",
   "license": "MIT",
   "author": {
@@ -23,7 +23,8 @@
     "lint": "eslint nodes --ext .js,.ts",
     "lint:fix": "eslint nodes --ext .js,.ts --fix",
     "test": "jest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "postinstall": "node -e \"try { require('ffmpeg-static'); console.log('FFmpeg binary available'); } catch(e) { console.warn('FFmpeg-static installation may have issues. You may need to install FFmpeg manually on your system.'); }\""
   },
   "files": [
     "dist"

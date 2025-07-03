@@ -14,7 +14,7 @@ This repository contains a custom n8n node for comprehensive, local media proces
 -   **Privacy-Focused**: All processing happens locally on your n8n instance. Your media files never leave your server.
 -   **No External APIs**: No need for API keys, subscriptions, or paying for a third-party service.
 -   **Powerful**: Leverages the full capabilities of FFmpeg for high-quality media manipulation.
--   **Self-Contained**: `ffmpeg` is automatically included. No manual installation of system dependencies is required.
+-   **Self-Contained**: FFmpeg is automatically downloaded and included via `@ffmpeg-installer/ffmpeg`. No manual installation of system dependencies is required in most cases.
 -   **Flexible**: Handles a wide variety of operations, from simple trims to complex audio mixing and text overlays.
 
 ## Features
@@ -161,11 +161,11 @@ Add text to a video using alignment presets and custom styling.
 
 -   n8n: Version 1.0 or higher recommended.
 -   Node.js: Version 16+.
--   FFmpeg: Automatically included via `ffmpeg-static`, but manual installation may be required on some systems.
+-   FFmpeg: Automatically downloaded and included via `@ffmpeg-installer/ffmpeg`, with `ffmpeg-static` as fallback. Manual installation may be required on some systems.
 
 ### FFmpeg Installation
 
-The node includes FFmpeg via the `ffmpeg-static` package, but if you encounter FFmpeg-related errors on your server, you may need to install FFmpeg manually:
+The node automatically downloads FFmpeg via the `@ffmpeg-installer/ffmpeg` package (with `ffmpeg-static` as fallback), but if you encounter FFmpeg-related errors on your server, you may need to install FFmpeg manually:
 
 **Ubuntu/Debian:**
 ```bash

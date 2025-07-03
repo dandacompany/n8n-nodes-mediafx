@@ -8,11 +8,11 @@ export const resourceSelection: INodeProperties[] = [
 		noDataExpression: true,
 		options: [
 			{
-				name: 'Video Processing',
+				name: 'Video',
 				value: 'video',
 			},
 			{
-				name: 'Audio Processing',
+				name: 'Audio',
 				value: 'audio',
 			},
 			{
@@ -24,7 +24,7 @@ export const resourceSelection: INodeProperties[] = [
 				value: 'transition',
 			},
 			{
-				name: 'Image Processing',
+				name: 'Image',
 				value: 'image',
 			},
 			{

@@ -6,72 +6,150 @@ import axios from 'axios';
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import { IDataObject } from 'n8n-workflow';
 
-// Initialize FFmpeg with better error handling
+// Initialize FFmpeg with comprehensive fallback strategy
 let ffmpegPath: string | null = null;
+let ffmpegInitialized = false;
 
-try {
-	// eslint-disable-next-line n8n-nodes-base/node-dirname-against-project-path
-	ffmpegPath = require('ffmpeg-static');
-	
-	if (ffmpegPath && fs.existsSync(ffmpegPath)) {
-		ffmpeg.setFfmpegPath(ffmpegPath);
-		console.log(`FFmpeg initialized at: ${ffmpegPath}`);
-	} else {
-		console.error('ffmpeg-static binary not found at expected path:', ffmpegPath);
-		// Try to find ffmpeg in system PATH as fallback
-		try {
-			const { execSync } = require('child_process');
-			const systemFfmpegPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
-			if (systemFfmpegPath) {
-				ffmpeg.setFfmpegPath(systemFfmpegPath);
-				console.log(`Using system FFmpeg at: ${systemFfmpegPath}`);
-			}
-		} catch (error) {
-			console.error('System FFmpeg also not found. Please install FFmpeg or ensure ffmpeg-static is properly installed.');
+function tryInitializeFfmpeg(): boolean {
+	if (ffmpegInitialized) return true;
+
+	// Strategy 1: Try @ffmpeg-installer/ffmpeg package (most reliable)
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+		const installerPath = ffmpegInstaller.path;
+		if (installerPath && fs.existsSync(installerPath)) {
+			ffmpeg.setFfmpegPath(installerPath);
+			ffmpegPath = installerPath;
+			ffmpegInitialized = true;
+			console.log(`FFmpeg initialized with @ffmpeg-installer: ${installerPath}`);
+			return true;
+		} else {
+			console.warn('@ffmpeg-installer path exists but binary not found:', installerPath);
 		}
+	} catch (error) {
+		console.warn('@ffmpeg-installer package not available:', (error as Error).message);
 	}
-} catch (error) {
-	console.error('Error initializing ffmpeg-static:', error);
-	// Try to find ffmpeg in system PATH as fallback
+
+	// Strategy 2: Try ffmpeg-static package (fallback)
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const staticPath = require('ffmpeg-static');
+		if (staticPath && fs.existsSync(staticPath)) {
+			ffmpeg.setFfmpegPath(staticPath);
+			ffmpegPath = staticPath;
+			ffmpegInitialized = true;
+			console.log(`FFmpeg initialized with ffmpeg-static: ${staticPath}`);
+			return true;
+		} else {
+			console.warn('ffmpeg-static path exists but binary not found:', staticPath);
+		}
+	} catch (error) {
+		console.warn('ffmpeg-static package not available:', (error as Error).message);
+	}
+
+	// Strategy 3: Try system PATH
 	try {
 		const { execSync } = require('child_process');
-		const systemFfmpegPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
-		if (systemFfmpegPath) {
-			ffmpeg.setFfmpegPath(systemFfmpegPath);
-			console.log(`Using system FFmpeg at: ${systemFfmpegPath}`);
+		const systemPath = execSync('which ffmpeg 2>/dev/null || where ffmpeg 2>nul', { 
+			encoding: 'utf8',
+			timeout: 3000 
+		}).trim();
+		
+		if (systemPath && fs.existsSync(systemPath)) {
+			ffmpeg.setFfmpegPath(systemPath);
+			ffmpegPath = systemPath;
+			ffmpegInitialized = true;
+			console.log(`FFmpeg initialized with system binary: ${systemPath}`);
+			return true;
 		}
-	} catch (fallbackError) {
-		console.error('FFmpeg not found in system PATH either:', fallbackError);
+	} catch (error) {
+		console.warn('System FFmpeg not found:', (error as Error).message);
 	}
+
+	// Strategy 4: Try common installation paths
+	const commonPaths = [
+		'/usr/bin/ffmpeg',
+		'/usr/local/bin/ffmpeg',
+		'/opt/homebrew/bin/ffmpeg',
+		'C:\\ffmpeg\\bin\\ffmpeg.exe',
+		'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe'
+	];
+
+	for (const testPath of commonPaths) {
+		try {
+			if (fs.existsSync(testPath)) {
+				ffmpeg.setFfmpegPath(testPath);
+				ffmpegPath = testPath;
+				ffmpegInitialized = true;
+				console.log(`FFmpeg initialized with common path: ${testPath}`);
+				return true;
+			}
+		} catch (error) {
+			// Continue to next path
+		}
+	}
+
+	console.error('FFmpeg not found in any location. Manual installation required.');
+	return false;
 }
+
+// Try to initialize FFmpeg on module load
+tryInitializeFfmpeg();
 
 const TEMP_DIR = path.resolve(__dirname, '..', '..', 'temp_mediafx');
 fs.ensureDirSync(TEMP_DIR);
 
 // Function to verify FFmpeg is available
 export function verifyFfmpegAvailability(): void {
+	// First try to reinitialize if not already done
+	if (!ffmpegInitialized) {
+		const success = tryInitializeFfmpeg();
+		if (!success) {
+			throw new Error(
+				'FFmpeg is not available on this system. ' +
+				'Please install FFmpeg manually using one of these methods:\n' +
+				'Ubuntu/Debian: sudo apt update && sudo apt install ffmpeg\n' +
+				'CentOS/RHEL: sudo dnf install ffmpeg\n' +
+				'Alpine: apk add ffmpeg\n' +
+				'macOS: brew install ffmpeg\n' +
+				'Or ensure ffmpeg-static package is properly installed.'
+			);
+		}
+	}
+
+	// Test the FFmpeg binary
 	try {
-		// Try to get FFmpeg version to verify it's working
 		const { execSync } = require('child_process');
-		let testPath = ffmpegPath;
-		
-		if (!testPath) {
-			// Try to find ffmpeg in PATH
-			try {
-				testPath = execSync('which ffmpeg || where ffmpeg', { encoding: 'utf8' }).trim();
-			} catch {
-				testPath = 'ffmpeg'; // fallback
-			}
+		if (!ffmpegPath) {
+			throw new Error('FFmpeg path not set');
 		}
 		
-		execSync(`"${testPath}" -version`, { stdio: 'pipe', timeout: 5000 });
+		// Test if the binary is executable
+		execSync(`"${ffmpegPath}" -version`, { 
+			stdio: 'pipe', 
+			timeout: 5000,
+			encoding: 'utf8'
+		});
+		
+		console.log(`FFmpeg verification successful: ${ffmpegPath}`);
 	} catch (error) {
-		throw new Error(
-			'FFmpeg is not available or not working properly. ' +
-			'Please ensure FFmpeg is installed on your system or that ffmpeg-static package is properly installed. ' +
-			'You may need to install FFmpeg manually on your server. ' +
-			`Error: ${(error as Error).message}`
-		);
+		// Try to reinitialize one more time
+		ffmpegInitialized = false;
+		ffmpegPath = null;
+		const retrySuccess = tryInitializeFfmpeg();
+		
+		if (!retrySuccess) {
+			throw new Error(
+				'FFmpeg binary test failed. ' +
+				'Please install FFmpeg manually on your server:\n' +
+				'Ubuntu/Debian: sudo apt update && sudo apt install ffmpeg\n' +
+				'CentOS/RHEL: sudo dnf install ffmpeg\n' +
+				'Alpine: apk add ffmpeg\n' +
+				'macOS: brew install ffmpeg\n' +
+				`Original error: ${(error as Error).message}`
+			);
+		}
 	}
 }
 

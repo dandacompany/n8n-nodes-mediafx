@@ -108,7 +108,7 @@ export async function executeMixAudio(
 		audioProcessingChain += 'asetpts=PTS-STARTPTS,';
 		
 		// Step 4: Apply fade effects
-		let fadeFilters = [];
+		const fadeFilters = [];
 		if (enableFadeIn) {
 			fadeFilters.push(`afade=t=in:st=0:d=${fadeInDuration}`);
 		}

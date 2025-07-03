@@ -24,7 +24,7 @@
     "lint:fix": "eslint nodes --ext .js,.ts --fix",
     "test": "jest",
     "prepublishOnly": "npm run build",
-    "postinstall": "node -e \"try { require('ffmpeg-static'); console.log('FFmpeg binary available'); } catch(e) { console.warn('FFmpeg-static installation may have issues. You may need to install FFmpeg manually on your system.'); }\""
+    "postinstall": "node -e \"try { const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg'); console.log('FFmpeg binary available via @ffmpeg-installer:', ffmpegInstaller.path); } catch(e1) { try { require('ffmpeg-static'); console.log('FFmpeg binary available via ffmpeg-static'); } catch(e2) { console.warn('FFmpeg installation may have issues. You may need to install FFmpeg manually on your system.'); } }\""
   },
   "files": [
     "dist"
@@ -47,6 +47,7 @@
     "transition"
   ],
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/fs-extra": "^11.0.4",
     "axios": "^1.10.0",
     "ffmpeg-static": "^5.2.0",

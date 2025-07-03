@@ -77,3 +77,4 @@ ref/
 .cursor/
 .claude/
 .history/
+deploy.sh

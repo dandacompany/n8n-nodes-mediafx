@@ -1,0 +1,79 @@
+{
+  "name": "n8n-nodes-mediafx",
+  "version": "1.0.0",
+  "description": "N8N custom nodes for video editing and media processing with FFmpeg",
+  "license": "MIT",
+  "author": {
+    "name": "dante",
+    "email": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dante/n8n-nodes-mediafx.git"
+  },
+  "main": "dist/nodes/MediaFX/MediaFX.node.js",
+  "scripts": {
+    "build": "npm run clean && tsc && gulp build:icons",
+    "clean": "rimraf dist",
+    "dev": "tsc --watch",
+    "lint": "eslint nodes --ext .js,.ts",
+    "lint:fix": "eslint nodes --ext .js,.ts --fix",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "credentials"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "nodes": [
+      "dist/nodes/MediaFX/MediaFX.node.js",
+      "dist/nodes/MediaFont/MediaFont.node.js"
+    ],
+    "credentials": [
+      "dist/credentials/MediaFXApi.credentials.js"
+    ]
+  },
+  "keywords": [
+    "n8n",
+    "n8n-community-node-package",
+    "video",
+    "audio",
+    "ffmpeg",
+    "media",
+    "editing",
+    "subtitle",
+    "transition"
+  ],
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^4.0.2",
+    "gulp-rename": "^2.0.0",
+    "jest": "^29.7.0",
+    "n8n-core": "*",
+    "n8n-workflow": "*",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "~4.8.4"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
+  }
+}

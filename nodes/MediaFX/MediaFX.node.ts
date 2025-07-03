@@ -325,11 +325,17 @@ export class MediaFX implements INodeType {
 								| 'longest'
 								| 'first';
 
-							const advancedMixingRaw = this.getNodeParameter('advancedMixing', i, {}) as IDataObject;
-							
-							// The structure should be advancedMixing.partialMixSettings with all values
-							const partialMixSettings = advancedMixingRaw.partialMixSettings as IDataObject | undefined;
-							const advancedMixing: IDataObject = partialMixSettings || {};
+							// Get advanced mixing parameters directly
+							const advancedMixing: IDataObject = {
+								enablePartialMix: this.getNodeParameter('enablePartialMix', i, false),
+								startTime: this.getNodeParameter('startTime', i, 0),
+								duration: this.getNodeParameter('duration', i, undefined),
+								loop: this.getNodeParameter('loop', i, false),
+								enableFadeIn: this.getNodeParameter('enableFadeIn', i, false),
+								fadeInDuration: this.getNodeParameter('fadeInDuration', i, 1),
+								enableFadeOut: this.getNodeParameter('enableFadeOut', i, false),
+								fadeOutDuration: this.getNodeParameter('fadeOutDuration', i, 1),
+							};
 
 							outputPath = await executeMixAudio.call(
 								this,

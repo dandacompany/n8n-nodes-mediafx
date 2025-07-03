@@ -323,6 +323,7 @@ export const audioProperties: INodeProperties[] = [
 		},
 		description: 'If audio is shorter than Mix Duration: Loop=true repeats audio to fill duration, Loop=false inserts audio as-is (ends early). If audio is longer: always trims to exact duration.',
 	},
+	// Fade Effects (independent of partial mix)
 	{
 		displayName: 'Enable Fade In',
 		name: 'enableFadeIn',
@@ -332,10 +333,9 @@ export const audioProperties: INodeProperties[] = [
 			show: {
 				resource: ['audio'],
 				operation: ['mixAudio'],
-				enablePartialMix: [true],
 			},
 		},
-		description: 'Apply fade in effect to the inserted audio',
+		description: 'Apply fade in effect to the secondary audio',
 	},
 	{
 		displayName: 'Fade In Duration (seconds)',
@@ -346,7 +346,6 @@ export const audioProperties: INodeProperties[] = [
 			show: {
 				resource: ['audio'],
 				operation: ['mixAudio'],
-				enablePartialMix: [true],
 				enableFadeIn: [true],
 			},
 		},
@@ -361,10 +360,9 @@ export const audioProperties: INodeProperties[] = [
 			show: {
 				resource: ['audio'],
 				operation: ['mixAudio'],
-				enablePartialMix: [true],
 			},
 		},
-		description: 'Apply fade out effect to the inserted audio',
+		description: 'Apply fade out effect to the secondary audio',
 	},
 	{
 		displayName: 'Fade Out Duration (seconds)',
@@ -375,7 +373,6 @@ export const audioProperties: INodeProperties[] = [
 			show: {
 				resource: ['audio'],
 				operation: ['mixAudio'],
-				enablePartialMix: [true],
 				enableFadeOut: [true],
 			},
 		},

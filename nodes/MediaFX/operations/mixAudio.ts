@@ -133,11 +133,36 @@ export async function executeMixAudio(
 			.complexFilter(filterComplex)
 			.outputOptions(['-map', '0:v', '-map', '[mixed_audio]', '-c:v copy']);
 	} else {
-		// Standard full audio mix
-		command.complexFilter(
-			`[0:a]volume=${videoVolume}[a0]; [1:a]volume=${audioVolume}[a1]; [a0][a1]amix=inputs=2:duration=${matchLength}[a]`,
-		)
-		.outputOptions(['-map', '0:v', '-map', '[a]', '-c:v copy']);
+		// Standard full audio mix with fade effects
+		let audioProcessingChain = '[1:a]';
+		
+		// Apply fade effects if enabled
+		const fadeFilters = [];
+		if (enableFadeIn) {
+			fadeFilters.push(`afade=t=in:st=0:d=${fadeInDuration}`);
+		}
+		if (enableFadeOut) {
+			// For full mix, we need to get the audio duration to calculate fade out start
+			const audioDuration = await getDuration(audioPath);
+			const fadeOutStart = Math.max(0, audioDuration - fadeOutDuration);
+			fadeFilters.push(`afade=t=out:st=${fadeOutStart}:d=${fadeOutDuration}`);
+		}
+		
+		if (fadeFilters.length > 0) {
+			audioProcessingChain += fadeFilters.join(',') + ',';
+		}
+		
+		// Apply volume and create labeled output
+		audioProcessingChain += `volume=${audioVolume}[a1]`;
+		
+		const filterComplex = 
+			audioProcessingChain + ';' +
+			`[0:a]volume=${videoVolume}[a0];` +
+			`[a0][a1]amix=inputs=2:duration=${matchLength}[a]`;
+
+		command
+			.complexFilter(filterComplex)
+			.outputOptions(['-map', '0:v', '-map', '[a]', '-c:v copy']);
 	}
 
 	command.save(outputPath);

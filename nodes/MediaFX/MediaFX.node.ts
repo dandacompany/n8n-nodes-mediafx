@@ -326,11 +326,12 @@ export class MediaFX implements INodeType {
 								| 'first';
 
 							// Get advanced mixing parameters directly
+							const enablePartialMix = this.getNodeParameter('enablePartialMix', i, false) as boolean;
 							const advancedMixing: IDataObject = {
-								enablePartialMix: this.getNodeParameter('enablePartialMix', i, false),
-								startTime: this.getNodeParameter('startTime', i, 0),
-								duration: this.getNodeParameter('duration', i, undefined),
-								loop: this.getNodeParameter('loop', i, false),
+								enablePartialMix,
+								startTime: enablePartialMix ? this.getNodeParameter('startTime', i, 0) : 0,
+								duration: enablePartialMix ? this.getNodeParameter('duration', i, undefined) : undefined,
+								loop: enablePartialMix ? this.getNodeParameter('loop', i, false) : false,
 								enableFadeIn: this.getNodeParameter('enableFadeIn', i, false),
 								fadeInDuration: this.getNodeParameter('fadeInDuration', i, 1),
 								enableFadeOut: this.getNodeParameter('enableFadeOut', i, false),

@@ -25,7 +25,7 @@ This repository contains a custom n8n node for comprehensive, local media proces
     - Mix audio tracks with precise volume control for each source
     - **Partial Audio Mixing**: Insert audio at specific time ranges with start time and duration control
     - **Audio Looping**: Automatically loop shorter audio to match desired duration
-    - **Fade Effects**: Apply fade-in and fade-out effects to mixed audio with customizable duration
+    - **Independent Fade Effects**: Apply fade-in and fade-out effects with customizable duration for both full and partial mixing
 -   **Image Operations**: Convert images into video clips with custom dimensions and duration. Overlay images as watermarks with control over position and opacity.
 -   **Enhanced Text and Subtitles**: 
     - Burn text overlays with extensive styling (font, size, color, outline, background box)
@@ -71,7 +71,7 @@ This is the main node for all media processing operations. You select a `resourc
     - **Full Mix Mode**: Mix audio across the entire duration (shortest/longest/first source)
     - **Partial Mix Mode**: Insert audio at specific time ranges with precise start time and duration
     - **Audio Looping**: Automatically repeat shorter audio to fill the specified duration
-    - **Fade Effects**: Apply fade-in and fade-out effects with customizable duration
+    - **Independent Fade Effects**: Apply fade-in and fade-out effects with customizable duration for both full and partial mixing
 
 #### **Image** Resource
 -   `Image to Video`: Create a video from a source image, specifying duration and output dimensions.

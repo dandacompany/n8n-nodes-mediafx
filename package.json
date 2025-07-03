@@ -4,12 +4,16 @@
   "description": "N8N custom nodes for video editing and media processing",
   "license": "MIT",
   "author": {
-    "name": "dante",
-    "email": ""
+    "name": "Dante",
+    "email": "datapod.k@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dante/n8n-nodes-mediafx.git"
+    "url": "https://github.com/dandacompany/n8n-nodes-mediafx.git"
+  },
+  "homepage": "https://github.com/dandacompany/n8n-nodes-mediafx#readme",
+  "bugs": {
+    "url": "https://github.com/dandacompany/n8n-nodes-mediafx/issues"
   },
   "main": "dist/nodes/MediaFX/MediaFX.node.js",
   "scripts": {

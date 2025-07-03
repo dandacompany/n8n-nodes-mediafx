@@ -5,7 +5,8 @@ function buildIcons() {
   return gulp
     .src('nodes/**/*.png')
     .pipe(rename((path) => {
-      path.dirname = path.dirname.replace(/.*nodes[\/\\]/, '');
+      // Keep the full path structure under dist/nodes/
+      path.dirname = 'nodes/' + path.dirname.replace(/.*nodes[\/\\]/, '');
     }))
     .pipe(gulp.dest('dist'));
 }

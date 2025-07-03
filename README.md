@@ -1,303 +1,153 @@
 # n8n-nodes-mediafx
 
-N8N custom nodes for video editing and media processing with FFmpeg. This package provides comprehensive video/audio processing capabilities through n8n workflows.
+[![NPM Version](https://img.shields.io/npm/v/n8n-nodes-mediafx?style=flat-square)](https://www.npmjs.com/package/n8n-nodes-mediafx)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![N8N Community Node](https://img.shields.io/badge/n8n-community--node-blue.svg?style=flat-square)](https://n8n.io)
+
+This repository contains a custom n8n node for comprehensive, local media processing using the power of FFmpeg. It allows you to perform a wide range of video, audio, image, and text operations directly within your n8n workflows without needing any external API or service.
+
+<!-- Optional: Add a GIF of the node in action here -->
+<!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
+
+## Why use MediaFX?
+
+-   **Privacy-Focused**: All processing happens locally on your n8n instance. Your media files never leave your server.
+-   **No External APIs**: No need for API keys, subscriptions, or paying for a third-party service.
+-   **Powerful**: Leverages the full capabilities of FFmpeg for high-quality media manipulation.
+-   **Self-Contained**: `ffmpeg` is automatically included. No manual installation of system dependencies is required.
+-   **Flexible**: Handles a wide variety of operations, from simple trims to complex audio mixing and text overlays.
 
 ## Features
 
-- **Video Processing**: Merge, trim, and mix audio with videos
-- **Audio Processing**: Extract audio, mix multiple audio sources
-- **Subtitle & Text**: Add subtitles and text overlays with custom styling
-- **Transition Effects**: Apply 30+ transition effects between videos
-- **Font Management**: Upload and manage custom fonts
-- **Media Management**: Store, list, and manage processed media files
+-   **Video Processing**: Merge multiple clips, trim sections, apply cross-fade transitions, and add fade-in/out effects.
+-   **Audio Manipulation**: Extract audio from video, and mix in new audio tracks with options for volume control, full track mixing, or partial mixing over specific durations.
+-   **Image Operations**: Convert images into video clips with custom dimensions and duration. Overlay images as watermarks with control over position and opacity.
+-   **Text and Subtitles**: Burn text overlays onto videos with extensive styling options (font, size, color, position, background box). Add and style external subtitle files (`.srt`).
+-   **Font Management**: Upload, list, preview, and delete your own custom fonts (TTF, OTF) to be used in text operations.
 
-## Installation
+## Installation for n8n
 
-```bash
-npm install n8n-nodes-mediafx
-```
+1.  Go to **Settings > Community Nodes**.
+2.  Click **Install**.
+3.  Enter `n8n-nodes-mediafx` in the **Enter npm package name** field.
+4.  Click **Install** again.
 
-## Setup
+The node will be installed, and n8n will restart. You should then see the "MediaFX" node in your node panel.
 
-### 1. MediaFX API Server
+For older n8n versions or manual installation:
 
-First, ensure your MediaFX API server is running. The default endpoint is `http://localhost:3000`.
+1.  Navigate to your n8n user data folder (by default, `~/.n8n/`).
+2.  Enter the `nodes` directory: `cd ~/.n8n/nodes`.
+3.  Install the package: `npm install n8n-nodes-mediafx`.
+4.  Restart your n8n instance.
 
-### 2. Configure Credentials
+## Node: MediaFX
 
-Add MediaFX API credentials in n8n:
+This is the main node for all media processing operations. You select a `resource` type and then an `operation` to perform on that resource.
 
-1. Go to **Settings** → **Credentials**
-2. Click **Add Credential**
-3. Select **MediaFX API**
-4. Configure:
-   - **API Base URL**: `http://localhost:3000` (or your server URL)
-   - **API Key**: (optional, if your server requires authentication)
+### Resources & Operations
 
-## Nodes
+#### **Video** Resource
+-   `Merge`: Combine multiple video files into a single video.
+-   `Trim`: Cut a video to a specific start and end time.
+-   `Mix Audio`: Mix an audio file into the video's existing audio track.
+-   `Add Text`: Burn a text overlay onto the video.
+-   `Add Subtitle File`: Add subtitles from an `.srt` file.
+-   `Stamp Image`: Overlay an image (watermark) on the video.
 
-### MediaFX Node
+#### **Audio** Resource
+-   `Extract`: Extract the audio track from a video file into a specified format (e.g., mp3, aac).
+-   `Mix Audio`: Mix a primary video's audio with a secondary audio source. Includes advanced options to mix into a specific time segment with looping.
 
-Main node for video/audio processing operations.
+#### **Image** Resource
+-   `Image to Video`: Create a video from a source image, specifying duration and output dimensions.
+-   `Stamp Image`: Overlay an image onto a video with positioning and opacity options.
 
-#### Resources & Operations
+#### **Transition** Resource
+-   `Apply`: Apply a transition effect between two or more video clips.
+-   `Fade`: Apply a fade-in or fade-out effect to a video clip.
 
-##### Video Processing
-- **Merge Videos**: Combine multiple videos into one
-- **Trim Video**: Cut specific portions of video
-- **Mix Audio**: Add background music to video
-
-##### Audio Processing  
-- **Extract Audio**: Extract audio track from video
-- **Mix Audio**: Combine video with audio file
-
-##### Subtitle & Text
-- **Add Text Overlay**: Add custom text with styling
-- **Add Subtitle File**: Import SRT subtitle files
-
-##### Transition Effects
-- **Apply Transition**: Add transitions between videos
-- **Apply Fade Effect**: Add fade in/out effects
-- **Advanced Transition**: Multi-video custom transitions
-
-##### Media Management
-- **List Media**: Get stored media files
-- **Download Media**: Download by media ID
-- **Delete Media**: Remove stored files
-- **Get Stats**: Storage statistics
-
-### MediaFont Node
-
-Dedicated node for font management operations.
-
-#### Operations
-- **List Fonts**: Get available fonts
-- **Upload Font**: Add TTF/OTF font files
-- **Delete Font**: Remove user fonts
-- **Get Font Preview**: Font information
-- **Validate Font Key**: Check availability
+#### **Font** Resource
+-   `List`: Get a list of all available system and user-uploaded fonts.
+-   `Upload`: Upload a custom font file (`.ttf`, `.otf`) for use in text operations.
+-   `Delete`: Remove a previously uploaded user font.
+-   `Preview`: Get metadata for a specific font.
+-   `Validate`: Check if a font key is unique before uploading.
 
 ## Usage Examples
 
-### Basic Video Merge
+### Convert Image to Video
+Create a 10-second video at 1920x1080 from a single image.
 
 ```json
 {
-  "resource": "video",
-  "operation": "merge",
-  "videoSources": {
-    "sources": [
-      {
-        "sourceType": "url",
-        "videoUrl": "https://example.com/video1.mp4"
-      },
-      {
-        "sourceType": "url", 
-        "videoUrl": "https://example.com/video2.mp4"
-      }
-    ]
+  "resource": "image",
+  "operation": "imageToVideo",
+  "sourceImage": {
+    "source": { "sourceType": "binary", "binaryProperty": "data" }
+  },
+  "duration": 10,
+  "videoSize": {
+    "width": 1920,
+    "height": 1080
   },
   "outputFormat": "mp4"
 }
 ```
 
-### Add Text Overlay
+### Advanced Audio Mix
+Mix `new_audio.mp3` into `main_video.mp4`, starting at the 15-second mark for a duration of 30 seconds, and loop the new audio if it's shorter than 30s.
 
 ```json
 {
-  "resource": "subtitle",
-  "operation": "addText",
-  "videoSource": "https://example.com/video.mp4",
-  "subtitleText": "Hello World!",
-  "startTime": 0,
-  "endTime": 5,
-  "fontSettings": {
-    "fontKey": "noto-sans-kr",
-    "size": 48,
-    "color": "white",
-    "box": true,
-    "boxColor": "black",
-    "boxOpacity": 0.7
+  "resource": "audio",
+  "operation": "mixAudio",
+  "mixVideoSource": { "source": { "value": "/path/to/main_video.mp4" } },
+  "mixAudioSource": { "source": { "value": "/path/to/new_audio.mp3" } },
+  "videoVolume": 1.0,
+  "audioVolume": 0.5,
+  "advancedMixing": {
+    "enablePartialMix": true,
+    "startTime": 15,
+    "duration": 30,
+    "loop": true
   }
 }
 ```
 
-### Apply Transition Effect
+### Add Text Overlay with Custom Font
+Add text to a video using a pre-uploaded custom font.
 
 ```json
 {
-  "resource": "transition",
-  "operation": "apply",
-  "transitionSources": {
-    "sources": [
-      {"source": "https://example.com/video1.mp4"},
-      {"source": "https://example.com/video2.mp4"}
-    ]
-  },
-  "transitionEffect": "slideleft",
-  "transitionDuration": 1.5
+  "resource": "video",
+  "operation": "addText",
+  "source": { "source": { "binaryProperty": "data" } },
+  "text": "Hello, Custom Fonts!",
+  "textOptions": {
+    "font": "my-custom-font",
+    "size": 48,
+    "color": "yellow",
+    "position": { "x": "(w-text_w)/2", "y": "h-th-20" }
+  }
 }
 ```
-
-### Upload Custom Font
-
-```json
-{
-  "operation": "upload",
-  "fontSource": "binary",
-  "binaryProperty": "data",
-  "fontKey": "my-custom-font",
-  "fontName": "My Custom Font",
-  "description": "Custom font for projects"
-}
-```
-
-## Input/Output
-
-### Input
-- **JSON Data**: Configuration parameters
-- **Binary Data**: Media files, fonts (when applicable)
-
-### Output
-- **Binary Data**: Processed video/audio files
-- **JSON Data**: Operation results, media information
-
-## Supported Formats
-
-### Video
-- **Input**: MP4, AVI, MOV, MKV, WebM
-- **Output**: MP4, AVI, MOV
-
-### Audio
-- **Input**: MP3, WAV, AAC, M4A
-- **Output**: MP3, WAV, AAC
-
-### Fonts
-- **Input**: TTF, OTF
-- **Encoding**: UTF-8 support for all languages
-
-### Subtitles
-- **Input**: SRT, VTT
-- **Encoding**: UTF-8
-
-## Transition Effects
-
-Over 30 transition effects available:
-
-### Basic Effects
-- `fade`, `fadeblack`, `fadewhite`
-
-### Slide Effects
-- `slideleft`, `slideright`, `slideup`, `slidedown`
-
-### Wipe Effects
-- `wipeleft`, `wiperight`, `wipeup`, `wipedown`
-
-### Circular Effects
-- `circlecrop`, `circleopen`, `circleclose`, `radial`
-
-### Diagonal Effects
-- `diagtl`, `diagtr`, `diagbl`, `diagbr`
-
-### Special Effects
-- `pixelize`, `dissolve`, `distance`
-
-### And many more...
-
-## Error Handling
-
-The nodes support n8n's built-in error handling:
-
-- **Continue on Fail**: Process remaining items on error
-- **Error Output**: Detailed error messages in JSON format
-- **Timeout Control**: Configurable request timeouts
 
 ## Requirements
 
-- **N8N**: Version 0.196.0 or higher
-- **MediaFX API Server**: Running instance
-- **FFmpeg**: Required on API server
-- **Node.js**: Version 16+ on API server
-
-## API Server Setup
-
-See the main MediaFX API documentation for server setup instructions:
-
-```bash
-# Install and run MediaFX API
-git clone https://github.com/your-repo/media-editor
-cd media-editor
-npm install
-npm start
-```
+-   n8n: Version 1.0 or higher recommended.
+-   Node.js: Version 16+.
 
 ## Development
 
-### Building
+If you wish to contribute to this node:
 
-```bash
-npm run build
-```
-
-### Testing
-
-```bash
-npm test
-```
-
-### Development Mode
-
-```bash
-npm run dev
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Connection Failed**
-   - Check API server is running
-   - Verify base URL in credentials
-   - Check network connectivity
-
-2. **Font Not Found**
-   - Ensure font is uploaded via MediaFont node
-   - Check font key spelling
-   - Verify font file format (TTF/OTF only)
-
-3. **Video Processing Timeout**
-   - Increase timeout in additional options
-   - Check file sizes and server resources
-   - Verify video file accessibility
-
-4. **Subtitle Encoding Issues**
-   - Ensure UTF-8 encoding
-   - Check special character support
-   - Verify font supports required characters
-
-### Debugging
-
-Enable debug mode by setting environment variable:
-
-```bash
-N8N_LOG_LEVEL=debug
-```
+1. Clone this repository.
+2. Install dependencies with `npm install`.
+3. Build the node with `npm run build`.
+4. For development, use `npm run dev` to watch for changes and automatically rebuild.
+5. [Link your local repository to your n8n nodes directory.](https://docs.n8n.io/integrations/creating-nodes/test-node/#linking-the-node)
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Support
-
-- **Issues**: GitHub Issues
-- **Documentation**: [API Documentation](http://localhost:3000/docs)
-- **Community**: N8N Community Forum
-
-## Changelog
-
-### 1.0.0
-- Initial release
-- MediaFX and MediaFont nodes
-- Full API coverage
-- Comprehensive transition effects
-- Font management system
+MIT

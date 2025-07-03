@@ -74,3 +74,6 @@ temp/
 
 # Reference folder
 ref/
+.cursor/
+.claude/
+.history/

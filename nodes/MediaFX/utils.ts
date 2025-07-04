@@ -408,3 +408,5 @@ export function deleteUserFont(fontKey: string) {
 
 	return true;
 } 
+// Re-export ffmpeg version utilities
+export { getFFmpegCapabilities, checkTransitionSupport } from './utils/ffmpegVersion';

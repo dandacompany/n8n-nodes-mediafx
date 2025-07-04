@@ -110,7 +110,6 @@ export const transitionProperties: INodeProperties[] = [
 		default: 1.5,
 		description: 'Duration of transition effect in seconds',
 	},
-	/*
 	{
 		displayName: 'Output Format',
 		name: 'transitionOutputFormat',
@@ -130,7 +129,6 @@ export const transitionProperties: INodeProperties[] = [
 		default: 'mp4',
 		description: 'The format of the output video file.',
 	},
-	*/
 
 	// FADE EFFECT FIELDS
 	{

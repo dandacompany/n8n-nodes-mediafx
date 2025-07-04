@@ -485,7 +485,11 @@ export class MediaFX implements INodeType {
 
 							const transitionEffect = this.getNodeParameter('transitionEffect', i) as string;
 							const transitionDuration = this.getNodeParameter('transitionDuration', i) as number;
-							const transitionOutputFormat = 'mp4'; // Hardcoded for debugging
+							const transitionOutputFormat = this.getNodeParameter(
+								'transitionOutputFormat',
+								i,
+								'mp4',
+							) as string;
 							outputPath = await executeTransitionApply.call(
 								this,
 								paths,
@@ -507,7 +511,7 @@ export class MediaFX implements INodeType {
 							const fadeEffect = this.getNodeParameter('fadeEffect', i) as 'in' | 'out';
 							const fadeStartTime = this.getNodeParameter('fadeStartTime', i) as number;
 							const fadeDuration = this.getNodeParameter('fadeDuration', i) as number;
-							const outputFormat = 'mp4'; // Hardcoded for debugging
+							const outputFormat = this.getNodeParameter('transitionOutputFormat', i, 'mp4') as string;
 
 							outputPath = await executeTransitionFade.call(
 								this,

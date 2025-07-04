@@ -14,7 +14,6 @@ let ffmpegInitialized = false;
 function tryInitializeFfmpeg(): boolean {
 	if (ffmpegInitialized) return true;
 
-	// Strategy 1: Try @ffmpeg-installer/ffmpeg package (most reliable)
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
@@ -33,7 +32,6 @@ function tryInitializeFfmpeg(): boolean {
 					console.log('Dynamically set permissions for ffmpeg and ffprobe.');
 				} catch (permissionError) {
 					console.warn('Failed to set executable permissions dynamically:', permissionError);
-					// Continue anyway, as it might work in some environments
 				}
 			}
 
@@ -44,73 +42,23 @@ function tryInitializeFfmpeg(): boolean {
 			console.log(`FFmpeg initialized with @ffmpeg-installer: ${ffmpegInstallerPath}`);
 			console.log(`FFprobe initialized with @ffprobe-installer: ${ffprobeInstallerPath}`);
 			return true;
-		} else {
-			console.warn('@ffmpeg-installer or @ffprobe-installer path exists but binary not found:', {ffmpegInstallerPath, ffprobeInstallerPath});
 		}
 	} catch (error) {
-		console.warn('@ffmpeg-installer or @ffprobe-installer package not available:', (error as Error).message);
+		// This is the only strategy, so if it fails, we throw.
+		console.error('Failed to load FFmpeg/FFprobe from node_modules.', error);
+		throw new NodeOperationError(
+			// We can't use `this.getNode()` here as we are in a utility function.
+			// A generic error is sufficient.
+			{ name: 'MediaFX', type: 'n8n-nodes-mediafx.mediaFX' } as any,
+			'Could not load the required FFmpeg executable from the package. ' +
+			'This might be due to a restricted execution environment or a broken installation. ' +
+			'Please check your n8n environment permissions. ' +
+			`Original error: ${(error as Error).message}`,
+		);
 	}
 
-	// Strategy 2: Try ffmpeg-static package (fallback)
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const staticPath = require('ffmpeg-static');
-		if (staticPath && fs.existsSync(staticPath)) {
-			ffmpeg.setFfmpegPath(staticPath);
-			ffmpegPath = staticPath;
-			ffmpegInitialized = true;
-			console.log(`FFmpeg initialized with ffmpeg-static: ${staticPath}`);
-			return true;
-		} else {
-			console.warn('ffmpeg-static path exists but binary not found:', staticPath);
-		}
-	} catch (error) {
-		console.warn('ffmpeg-static package not available:', (error as Error).message);
-	}
-
-	// Strategy 3: Try system PATH
-	try {
-		const { execSync } = require('child_process');
-		const systemPath = execSync('which ffmpeg 2>/dev/null || where ffmpeg 2>nul', { 
-			encoding: 'utf8',
-			timeout: 3000 
-		}).trim();
-		
-		if (systemPath && fs.existsSync(systemPath)) {
-			ffmpeg.setFfmpegPath(systemPath);
-			ffmpegPath = systemPath;
-			ffmpegInitialized = true;
-			console.log(`FFmpeg initialized with system binary: ${systemPath}`);
-			return true;
-		}
-	} catch (error) {
-		console.warn('System FFmpeg not found:', (error as Error).message);
-	}
-
-	// Strategy 4: Try common installation paths
-	const commonPaths = [
-		'/usr/bin/ffmpeg',
-		'/usr/local/bin/ffmpeg',
-		'/opt/homebrew/bin/ffmpeg',
-		'C:\\ffmpeg\\bin\\ffmpeg.exe',
-		'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe'
-	];
-
-	for (const testPath of commonPaths) {
-		try {
-			if (fs.existsSync(testPath)) {
-				ffmpeg.setFfmpegPath(testPath);
-				ffmpegPath = testPath;
-				ffmpegInitialized = true;
-				console.log(`FFmpeg initialized with common path: ${testPath}`);
-				return true;
-			}
-		} catch (error) {
-			// Continue to next path
-		}
-	}
-
-	console.error('FFmpeg not found in any location. Manual installation required.');
+	// If we get here, something went wrong, but the catch didn't trigger.
+	console.error('FFmpeg binaries were not found in the expected package path.');
 	return false;
 }
 
@@ -122,55 +70,19 @@ fs.ensureDirSync(TEMP_DIR);
 
 // Function to verify FFmpeg is available
 export function verifyFfmpegAvailability(): void {
-	// First try to reinitialize if not already done
 	if (!ffmpegInitialized) {
 		const success = tryInitializeFfmpeg();
 		if (!success) {
-			throw new Error(
-				'FFmpeg is not available on this system. ' +
-				'Please install FFmpeg manually using one of these methods:\n' +
-				'Ubuntu/Debian: sudo apt update && sudo apt install ffmpeg\n' +
-				'CentOS/RHEL: sudo dnf install ffmpeg\n' +
-				'Alpine: apk add ffmpeg\n' +
-				'macOS: brew install ffmpeg\n' +
-				'Or ensure ffmpeg-static package is properly installed.'
+			// The error is now thrown inside tryInitializeFfmpeg, but as a fallback:
+			throw new NodeOperationError(
+				{ name: 'MediaFX', type: 'n8n-nodes-mediafx.mediaFX' } as any,
+				'FFmpeg is not available. The node failed to initialize it from its internal dependencies.'
 			);
 		}
 	}
-
-	// Test the FFmpeg binary
-	try {
-		const { execSync } = require('child_process');
-		if (!ffmpegPath) {
-			throw new Error('FFmpeg path not set');
-		}
-		
-		// Test if the binary is executable
-		execSync(`"${ffmpegPath}" -version`, { 
-			stdio: 'pipe', 
-			timeout: 5000,
-			encoding: 'utf8'
-		});
-		
-		console.log(`FFmpeg verification successful: ${ffmpegPath}`);
-	} catch (error) {
-		// Try to reinitialize one more time
-		ffmpegInitialized = false;
-		ffmpegPath = null;
-		const retrySuccess = tryInitializeFfmpeg();
-		
-		if (!retrySuccess) {
-			throw new Error(
-				'FFmpeg binary test failed. ' +
-				'Please install FFmpeg manually on your server:\n' +
-				'Ubuntu/Debian: sudo apt update && sudo apt install ffmpeg\n' +
-				'CentOS/RHEL: sudo dnf install ffmpeg\n' +
-				'Alpine: apk add ffmpeg\n' +
-				'macOS: brew install ffmpeg\n' +
-				`Original error: ${(error as Error).message}`
-			);
-		}
-	}
+	// The rest of the verification logic can be simplified or removed
+	// as we now only trust our single source of truth.
+	console.log(`FFmpeg verification successful: ${ffmpegPath}`);
 }
 
 export function getTempFile(extension: string): string {

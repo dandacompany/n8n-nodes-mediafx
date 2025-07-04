@@ -232,17 +232,15 @@ export class MediaFX implements INodeType {
 							const { paths, cleanup: c } = await resolveInputs(this, i, sourcesConfig);
 							cleanup = c;
 
-							const mergeOutputFormat = this.getNodeParameter('outputFormat', i) as string;
+							const mergeOutputFormat = this.getNodeParameter('videoOutputFormat', i) as string;
 							outputPath = await executeMerge.call(this, paths, mergeOutputFormat, i);
 							break;
 						}
 						case 'trim': {
 							const sourceParam = this.getNodeParameter('source', i, {}) as {
-								sourceType?: string;
-								value?: string;
-								binaryProperty?: string;
+								source: { sourceType: string; value: string; binaryProperty?: string };
 							};
-							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam as any]);
+							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
 							cleanup = c;
 
 							const startTime = this.getNodeParameter('startTime', i, 0) as number;

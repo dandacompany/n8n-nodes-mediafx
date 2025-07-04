@@ -112,7 +112,7 @@ export const transitionProperties: INodeProperties[] = [
 	},
 	{
 		displayName: 'Output Format',
-		name: 'outputFormat',
+		name: 'transitionOutputFormat',
 		type: 'options',
 		displayOptions: {
 			show: {

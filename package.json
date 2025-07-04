@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-mediafx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "N8N custom nodes for video editing and media processing",
   "license": "MIT",
   "author": {
@@ -27,7 +27,8 @@
     "postinstall": "node -e \"try { const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg'); console.log('FFmpeg binary available via @ffmpeg-installer:', ffmpegInstaller.path); } catch(e1) { try { require('ffmpeg-static'); console.log('FFmpeg binary available via ffmpeg-static'); } catch(e2) { console.warn('FFmpeg installation may have issues. You may need to install FFmpeg manually on your system.'); } }\""
   },
   "files": [
-    "dist"
+    "dist",
+    "fonts"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,

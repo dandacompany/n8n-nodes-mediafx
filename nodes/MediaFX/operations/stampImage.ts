@@ -25,11 +25,7 @@ export async function executeStampImage(
 	const startTime = (options.startTime as number) || 0;
 	const endTime = (options.endTime as number) || 5;
 
-	// Fade options
-	const enableFadeIn = options.enableFadeIn as boolean;
-	const fadeInDuration = (options.fadeInDuration as number) || 1;
-	const enableFadeOut = options.enableFadeOut as boolean;
-	const fadeOutDuration = (options.fadeOutDuration as number) || 1;
+
 
 	try {
 		// Get video duration for calculations
@@ -41,8 +37,7 @@ export async function executeStampImage(
 		console.log('Video duration:', videoDuration);
 		console.log('Stamp options:', {
 			width, height, x, y, rotationDegrees, opacity,
-			enableTimeControl, startTime, endTime,
-			enableFadeIn, fadeInDuration, enableFadeOut, fadeOutDuration
+			enableTimeControl, startTime, endTime
 		});
 		
 		// Start with the simplest possible filter

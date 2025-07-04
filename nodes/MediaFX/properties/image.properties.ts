@@ -301,61 +301,7 @@ export const imageProperties: INodeProperties[] = [
 		description: 'When the stamp should stop appearing. Leave empty for entire video duration.',
 	},
 	
-	// Fade Effects
-	{
-		displayName: 'Enable Fade In',
-		name: 'enableFadeIn',
-		type: 'boolean',
-		default: false,
-		displayOptions: {
-			show: {
-				resource: ['image'],
-				operation: ['stampImage'],
-			},
-		},
-		description: 'Apply fade in effect to the stamp',
-	},
-	{
-		displayName: 'Fade In Duration (seconds)',
-		name: 'fadeInDuration',
-		type: 'number',
-		default: 1,
-		displayOptions: {
-			show: {
-				resource: ['image'],
-				operation: ['stampImage'],
-				enableFadeIn: [true],
-			},
-		},
-		description: 'Duration of fade in effect in seconds',
-	},
-	{
-		displayName: 'Enable Fade Out',
-		name: 'enableFadeOut',
-		type: 'boolean',
-		default: false,
-		displayOptions: {
-			show: {
-				resource: ['image'],
-				operation: ['stampImage'],
-			},
-		},
-		description: 'Apply fade out effect to the stamp',
-	},
-	{
-		displayName: 'Fade Out Duration (seconds)',
-		name: 'fadeOutDuration',
-		type: 'number',
-		default: 1,
-		displayOptions: {
-			show: {
-				resource: ['image'],
-				operation: ['stampImage'],
-				enableFadeOut: [true],
-			},
-		},
-		description: 'Duration of fade out effect in seconds',
-	},
+
 	
 	// Opacity Control
 	{

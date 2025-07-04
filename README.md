@@ -30,7 +30,6 @@ This repository contains a custom n8n node for comprehensive, local media proces
     - Convert images into video clips with custom dimensions and duration
     - **Smart Watermarks**: Control position, size, rotation, and opacity
     - **Time Control**: Display watermarks for specific time ranges or entire video
-    - **Fade Effects**: Apply fade-in and fade-out effects to watermarks
 -   **Enhanced Text and Subtitles**: 
     - Burn text overlays with extensive styling (font, size, color, outline, background box)
     - **Smart Positioning**: Use alignment presets (left/center/right, top/middle/bottom) or custom coordinates
@@ -83,7 +82,6 @@ This is the main node for all media processing operations. You select a `resourc
     - **Position & Size Control**: Precise pixel positioning and sizing
     - **Rotation & Opacity**: Angle adjustment and transparency control
     - **Time Control**: Display for specific time ranges or entire video duration
-    - **Fade Effects**: Smooth fade-in and fade-out transitions for watermark appearance
 
 #### **Transition** Resource
 -   `Apply`: Apply a transition effect between two or more video clips.
@@ -166,7 +164,7 @@ Add text to a video using alignment presets and custom styling.
 ```
 
 ### Advanced Watermark Stamping
-Apply a watermark with fade effects for a specific time range.
+Apply a watermark for a specific time range.
 
 ```json
 {
@@ -186,11 +184,7 @@ Apply a watermark with fade effects for a specific time range.
   "opacity": 0.8,
   "enableTimeControl": true,
   "startTime": 5,
-  "endTime": 25,
-  "enableFadeIn": true,
-  "fadeInDuration": 2,
-  "enableFadeOut": true,
-  "fadeOutDuration": 2
+  "endTime": 25
 }
 ```
 

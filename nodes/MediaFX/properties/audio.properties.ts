@@ -74,7 +74,7 @@ export const audioProperties: INodeProperties[] = [
 	},
 	{
 		displayName: 'Output Format',
-		name: 'outputFormat',
+		name: 'audioOutputFormat',
 		type: 'options',
 		displayOptions: {
 			show: {

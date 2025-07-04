@@ -1,5 +1,4 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
-import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg } from '../utils';
 import * as fs from 'fs-extra';
@@ -9,9 +8,10 @@ export async function executeTrim(
 	input: string,
 	from: number,
 	to: number,
+	outputFormat: string,
 	itemIndex: number,
 ): Promise<string> {
-	const outputPath = getTempFile(path.extname(input));
+	const outputPath = getTempFile(`.${outputFormat}`);
 	const command = ffmpeg(input)
 		.setStartTime(from)
 		.setDuration(to - from)

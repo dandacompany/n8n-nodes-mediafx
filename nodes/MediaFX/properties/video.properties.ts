@@ -88,7 +88,7 @@ export const videoProperties: INodeProperties[] = [
 	},
 	{
 		displayName: 'Output Format',
-		name: 'outputFormat',
+		name: 'videoOutputFormat',
 		type: 'options',
 		displayOptions: {
 			show: {

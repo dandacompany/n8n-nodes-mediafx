@@ -113,7 +113,7 @@ export const imageProperties: INodeProperties[] = [
 	},
 	{
 		displayName: 'Output Format',
-		name: 'outputFormat',
+		name: 'imageOutputFormat',
 		type: 'options',
 		displayOptions: {
 			show: {

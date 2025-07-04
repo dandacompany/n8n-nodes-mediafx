@@ -1,7 +1,7 @@
 import { IExecuteFunctions, NodeOperationError, IDataObject } from 'n8n-workflow';
 import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
-import { getTempFile, runFfmpeg, getDuration } from '../utils';
+import { getTempFile, runFfmpeg } from '../utils';
 import * as fs from 'fs-extra';
 
 export async function executeStampImage(
@@ -28,16 +28,16 @@ export async function executeStampImage(
 
 	try {
 		// Get video duration for calculations
-		const videoDuration = await getDuration(videoPath);
+		// const videoDuration = await getDuration(videoPath);
 		
-		console.log('=== STAMP IMAGE DEBUG ===');
-		console.log('Video path:', videoPath);
-		console.log('Image path:', imagePath);
-		console.log('Video duration:', videoDuration);
-		console.log('Stamp options:', {
-			width, height, x, y, rotationDegrees, opacity,
-			enableTimeControl, startTime, endTime
-		});
+		// console.log('=== STAMP IMAGE DEBUG ===');
+		// console.log('Video path:', videoPath);
+		// console.log('Image path:', imagePath);
+		// console.log('Video duration:', videoDuration);
+		// console.log('Stamp options:', {
+		// 	width, height, x, y, rotationDegrees, opacity,
+		// 	enableTimeControl, startTime, endTime
+		// });
 		
 		// Start with the simplest possible filter
 		let complexFilter = '';

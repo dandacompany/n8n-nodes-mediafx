@@ -23,34 +23,40 @@ export async function executeTransitionApply(
 	const command = ffmpeg();
 	inputs.forEach((input) => command.addInput(input));
 
-	const durations = await Promise.all(inputs.map(input => getDuration(input)));
-	if (durations.some(d => d === null)) {
+	const durations = await Promise.all(inputs.map((input) => getDuration(input)));
+	if (durations.some((d) => d === null)) {
 		throw new NodeOperationError(this.getNode(), 'Could not get duration of one or more videos.', {
 			itemIndex,
 		});
 	}
 
-	const filterGraph: string[] = [];
-	let lastVideoOut = '0:v';
-	let lastAudioOut = '0:a';
+	// Initialize video and audio streams
+	const filterGraph: string[] = inputs.flatMap((_, i) => [
+		`[${i}:v]settb=AVTB[v${i}]`,
+		`[${i}:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a${i}]`,
+	]);
+
+	let lastVideoOut = 'v0';
+	let lastAudioOut = 'a0';
+	let cumulativeDuration = durations[0]!;
 
 	for (let i = 1; i < inputs.length; i++) {
-		const prevIndex = i - 1;
-		const prevDuration = durations[prevIndex]!;
-		const offset = prevDuration - duration;
-		const nextVideo = `${i}:v`;
-		const nextAudio = `${i}:a`;
-		const currentVideoOut = `v_out_${i}`;
-		const currentAudioOut = `a_out_${i}`;
+		const nextVideo = `v${i}`;
+		const nextAudio = `a${i}`;
+		const currentVideoOut = `vout${i}`;
+		const currentAudioOut = `aout${i}`;
+		const offset = cumulativeDuration - duration;
 
 		filterGraph.push(
-			`[${lastVideoOut}][${nextVideo}]xfade=transition=${transition}:duration=${duration}:offset=${offset}[${currentVideoOut}]`
+			`[${lastVideoOut}][${nextVideo}]xfade=transition=${transition}:duration=${duration}:offset=${offset}[${currentVideoOut}]`,
 		);
 		filterGraph.push(
-			`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`
+			`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
 		);
+
 		lastVideoOut = currentVideoOut;
 		lastAudioOut = currentAudioOut;
+		cumulativeDuration += durations[i]! - duration;
 	}
 
 	command

@@ -282,9 +282,11 @@ export class MediaFX implements INodeType {
 							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam as any]);
 							cleanup = c;
 
-							const startTime = this.getNodeParameter('startTime', i) as number;
-							const endTime = this.getNodeParameter('endTime', i) as number;
-							outputPath = await executeTrim.call(this, paths[0], startTime, endTime, i);
+							const startTime = this.getNodeParameter('startTime', i, 0) as number;
+							const endTime = this.getNodeParameter('endTime', i, 10) as number;
+							const outputFormat = this.getNodeParameter('videoOutputFormat', i, 'mp4') as string;
+
+							outputPath = await executeTrim.call(this, paths[0], startTime, endTime, outputFormat, i);
 							break;
 						}
 						case 'mixAudio': {
@@ -370,7 +372,7 @@ export class MediaFX implements INodeType {
 							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam as any]);
 							cleanup = c;
 
-							const extractFormat = this.getNodeParameter('outputFormat', i) as string;
+							const extractFormat = this.getNodeParameter('audioOutputFormat', i) as string;
 							const advancedOptions = this.getNodeParameter('advancedOptions', i, {}) as {
 								audioCodec?: string;
 								audioBitrate?: string;
@@ -483,7 +485,10 @@ export class MediaFX implements INodeType {
 
 							const transitionEffect = this.getNodeParameter('transitionEffect', i) as string;
 							const transitionDuration = this.getNodeParameter('transitionDuration', i) as number;
-							const transitionOutputFormat = this.getNodeParameter('transitionOutputFormat', i) as string;
+							const transitionOutputFormat = this.getNodeParameter(
+								'transitionOutputFormat',
+								i,
+							) as string;
 							outputPath = await executeTransitionApply.call(
 								this,
 								paths,
@@ -520,25 +525,21 @@ export class MediaFX implements INodeType {
 						}
 
 						case 'imageToVideo': {
-							const sourceImage = this.getNodeParameter('sourceImage.source', i) as {
-								sourceType: string;
-								value: string;
-								binaryProperty?: string;
+							const sourceParam = this.getNodeParameter('sourceImage', i, {}) as {
+								source: { sourceType: string; value: string; binaryProperty?: string };
 							};
-							const { paths: imagePaths, cleanup: imageCleanup } = await resolveInputs(this, i, [
-								sourceImage,
-							]);
-							cleanup = imageCleanup;
+							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
+							cleanup = c;
 
-							const duration = this.getNodeParameter('duration', i) as number;
-							const videoSize = this.getNodeParameter('videoSize', i, {}) as {
-								width?: number;
-								height?: number;
+							const duration = this.getNodeParameter('duration', i, 10) as number;
+							const videoSize = this.getNodeParameter('videoSize', i) as {
+								width: number;
+								height: number;
 							};
-							const outputFormat = this.getNodeParameter('outputFormat', i) as string;
+							const outputFormat = this.getNodeParameter('imageOutputFormat', i, 'mp4') as string;
 							outputPath = await executeImageToVideo.call(
 								this,
-								imagePaths[0],
+								paths[0],
 								duration,
 								videoSize,
 								outputFormat,

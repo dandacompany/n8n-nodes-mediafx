@@ -75,32 +75,66 @@ export async function executeTransitionApply(
 	// Use different filter strategies based on transition type
 	if (effectiveTransition === 'fade' || effectiveTransition === 'fadeblack' || effectiveTransition === 'fadewhite') {
 		// Fallback implementation for fade transitions without xfade
+		// Create properly timed overlays for transition duration only
+		
 		for (let i = 1; i < inputs.length; i++) {
 			const nextVideo = `v${i}`;
 			const nextAudio = `a${i}`;
 			const currentVideoOut = `vout${i}`;
 			const currentAudioOut = `aout${i}`;
-			const fadeOutStart = cumulativeDuration - duration;
 			
-			// Fade out previous video, fade in next video, then overlay
-			const fadeOutVideo = `fadeout${i}`;
-			const fadeInVideo = `fadein${i}`;
+			// Calculate timing - each video should transition at its end
+			const transitionStart = cumulativeDuration - duration;
 			
-			// Apply fade effects
+			// Extend the previous video segment to include the transition
+			const extendedPrev = `ext${i}`;
 			filterGraph.push(
-				`[${lastVideoOut}]fade=t=out:st=${fadeOutStart}:d=${duration}[${fadeOutVideo}]`,
-				`[${nextVideo}]fade=t=in:st=0:d=${duration}[${fadeInVideo}]`
+				`[${lastVideoOut}]tpad=stop_duration=${duration}[${extendedPrev}]`
 			);
 			
-			// Overlay the videos during transition
+			// Apply fade out to the extended previous video
+			const fadeOutVideo = `fadeout${i}`;
 			filterGraph.push(
-				`[${fadeOutVideo}][${fadeInVideo}]overlay=enable='between(t,${fadeOutStart},${cumulativeDuration})'[${currentVideoOut}]`
+				`[${extendedPrev}]fade=t=out:st=${transitionStart}:d=${duration}[${fadeOutVideo}]`
+			);
+			
+			// Prepare the next video with fade in and delay it to start at transition time
+			const fadeInVideo = `fadein${i}`;
+			const delayedVideo = `delayed${i}`;
+			
+			filterGraph.push(
+				`[${nextVideo}]fade=t=in:st=0:d=${duration}[${fadeInVideo}]`,
+				`[${fadeInVideo}]tpad=start_duration=${transitionStart}[${delayedVideo}]`
+			);
+			
+			// Overlay the videos during transition period only
+			filterGraph.push(
+				`[${fadeOutVideo}][${delayedVideo}]overlay[${currentVideoOut}]`
 			);
 			
 			// Audio crossfade only if audio exists
 			if (allHaveAudio) {
+				// Extend previous audio and apply fade out
+				const extendedPrevAudio = `aext${i}`;
+				const fadeOutAudio = `afadeout${i}`;
+				
 				filterGraph.push(
-					`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
+					`[${lastAudioOut}]apad=pad_dur=${duration}[${extendedPrevAudio}]`,
+					`[${extendedPrevAudio}]afade=t=out:st=${transitionStart}:d=${duration}[${fadeOutAudio}]`
+				);
+				
+				// Prepare next audio with fade in and delay
+				const fadeInAudio = `afadein${i}`;
+				const delayedAudio = `adelayed${i}`;
+				
+				filterGraph.push(
+					`[${nextAudio}]afade=t=in:st=0:d=${duration}[${fadeInAudio}]`,
+					`[${fadeInAudio}]adelay=${Math.floor(transitionStart * 1000)}|${Math.floor(transitionStart * 1000)}[${delayedAudio}]`
+				);
+				
+				// Mix the audio tracks
+				filterGraph.push(
+					`[${fadeOutAudio}][${delayedAudio}]amix=inputs=2:duration=longest[${currentAudioOut}]`
 				);
 			}
 

@@ -502,15 +502,18 @@ export class MediaFX implements INodeType {
 							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
 							cleanup = c;
 
-							const fadeEffect = this.getNodeParameter('fadeEffect', i) as string;
+							const fadeEffect = this.getNodeParameter('fadeEffect', i) as 'in' | 'out';
 							const fadeStartTime = this.getNodeParameter('fadeStartTime', i) as number;
 							const fadeDuration = this.getNodeParameter('fadeDuration', i) as number;
+							const outputFormat = this.getNodeParameter('outputFormat', i) as string;
+
 							outputPath = await executeTransitionFade.call(
 								this,
 								paths[0],
 								fadeEffect,
 								fadeStartTime,
 								fadeDuration,
+								outputFormat,
 								i,
 							);
 							break;

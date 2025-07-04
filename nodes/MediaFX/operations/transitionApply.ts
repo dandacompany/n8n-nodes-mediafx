@@ -11,10 +11,10 @@ export async function executeTransitionApply(
 	outputFormat: string,
 	itemIndex: number,
 ): Promise<string> {
-	if (inputs.length !== 2) {
+	if (inputs.length < 2) {
 		throw new NodeOperationError(
 			this.getNode(),
-			'Transition (Apply) operation requires exactly two source videos.',
+			'Transition (Apply) operation requires at least two source videos.',
 			{ itemIndex },
 		);
 	}
@@ -23,31 +23,39 @@ export async function executeTransitionApply(
 	const command = ffmpeg();
 	inputs.forEach((input) => command.addInput(input));
 
-	const firstVideoDuration = await getDuration(inputs[0]);
-	if (firstVideoDuration === null) {
-		throw new NodeOperationError(this.getNode(), 'Could not get duration of the first video.', {
+	const durations = await Promise.all(inputs.map(input => getDuration(input)));
+	if (durations.some(d => d === null)) {
+		throw new NodeOperationError(this.getNode(), 'Could not get duration of one or more videos.', {
 			itemIndex,
 		});
 	}
 
-	const offset = firstVideoDuration - duration;
+	const filterGraph: string[] = [];
+	let lastVideoOut = '0:v';
+	let lastAudioOut = '0:a';
 
-	const filterGraph = [
-		// Set up video streams
-		'[0:v]settb=AVTB[v0]',
-		'[1:v]settb=AVTB[v1]',
-		// Apply cross-fade (xfade)
-		`[v0][v1]xfade=transition=${transition}:duration=${duration}:offset=${offset}[v_out]`,
-		// Set up audio streams
-		'[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a0]',
-		'[1:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a1]',
-		// Apply audio cross-fade (acrossfade)
-		`[a0][a1]acrossfade=d=${duration}[a_out]`,
-	];
+	for (let i = 1; i < inputs.length; i++) {
+		const prevIndex = i - 1;
+		const prevDuration = durations[prevIndex]!;
+		const offset = prevDuration - duration;
+		const nextVideo = `${i}:v`;
+		const nextAudio = `${i}:a`;
+		const currentVideoOut = `v_out_${i}`;
+		const currentAudioOut = `a_out_${i}`;
+
+		filterGraph.push(
+			`[${lastVideoOut}][${nextVideo}]xfade=transition=${transition}:duration=${duration}:offset=${offset}[${currentVideoOut}]`
+		);
+		filterGraph.push(
+			`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`
+		);
+		lastVideoOut = currentVideoOut;
+		lastAudioOut = currentAudioOut;
+	}
 
 	command
 		.complexFilter(filterGraph)
-		.outputOptions(['-map', '[v_out]', '-map', '[a_out]'])
+		.outputOptions(['-map', `[${lastVideoOut}]`, '-map', `[${lastAudioOut}]`])
 		.videoCodec('libx264')
 		.audioCodec('aac')
 		.save(outputPath);

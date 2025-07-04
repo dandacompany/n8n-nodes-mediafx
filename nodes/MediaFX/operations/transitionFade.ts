@@ -1,5 +1,4 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
-import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg } from '../utils';
 import * as fs from 'fs-extra';
@@ -8,12 +7,13 @@ export async function executeTransitionFade(
 	this: IExecuteFunctions,
 	input: string,
 	// effect is 'in' or 'out' from the UI options
-	effect: string,
+	effect: 'in' | 'out',
 	startTime: number,
 	duration: number,
+	outputFormat: string,
 	itemIndex: number,
 ): Promise<string> {
-	const outputPath = getTempFile(path.extname(input));
+	const outputPath = getTempFile(`.${outputFormat}`);
 	const command = ffmpeg(input);
 
 	// Apply both video and audio fades for a consistent effect

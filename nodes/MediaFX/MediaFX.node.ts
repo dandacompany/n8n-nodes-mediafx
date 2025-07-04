@@ -25,6 +25,7 @@ import {
 	executeExtractAudio,
 	executeImageToVideo,
 	executeMerge,
+	executeMixAudio,
 	executeStampImage,
 	executeMultiVideoTransition,
 	executeSingleVideoFade,
@@ -276,6 +277,79 @@ export class MediaFX implements INodeType {
 								extractFormat,
 								extractCodec,
 								extractBitrate,
+								i,
+							);
+							break;
+						}
+
+						case 'mixAudio': {
+							// Construct source objects from flattened properties
+							const videoSourceType = this.getNodeParameter('mixVideoSourceType', i, 'url') as string;
+							const videoSourceParam = {
+								sourceType: videoSourceType,
+								value:
+									videoSourceType === 'url'
+										? (this.getNodeParameter('mixVideoSourceUrl', i, '') as string)
+										: '',
+								binaryProperty:
+									videoSourceType === 'binary'
+										? (this.getNodeParameter('mixVideoSourceBinary', i, 'data') as string)
+										: '',
+							};
+
+							const audioSourceType = this.getNodeParameter('mixAudioSourceType', i, 'url') as string;
+							const audioSourceParam = {
+								sourceType: audioSourceType,
+								value:
+									audioSourceType === 'url'
+										? (this.getNodeParameter('mixAudioSourceUrl', i, '') as string)
+										: '',
+								binaryProperty:
+									audioSourceType === 'binary'
+										? (this.getNodeParameter('mixAudioSourceBinary', i, 'data') as string)
+										: '',
+							};
+
+							const { paths: videoPaths, cleanup: videoCleanup } = await resolveInputs(this, i, [
+								videoSourceParam as any,
+							]);
+							const { paths: audioPaths, cleanup: audioCleanup } = await resolveInputs(this, i, [
+								audioSourceParam as any,
+							]);
+							cleanup = async () => {
+								await videoCleanup();
+								await audioCleanup();
+							};
+
+							const videoVol = this.getNodeParameter('videoVolume', i, 1.0) as number;
+							const audioVol = this.getNodeParameter('audioVolume', i, 1.0) as number;
+
+							const matchLength = this.getNodeParameter('matchLength', i, 'shortest') as
+								| 'shortest'
+								| 'longest'
+								| 'first';
+
+							// Get advanced mixing parameters directly
+							const enablePartialMix = this.getNodeParameter('enablePartialMix', i, false) as boolean;
+							const advancedMixing: IDataObject = {
+								enablePartialMix,
+								startTime: enablePartialMix ? this.getNodeParameter('startTime', i, 0) : 0,
+								duration: enablePartialMix ? this.getNodeParameter('duration', i, undefined) : undefined,
+								loop: enablePartialMix ? this.getNodeParameter('loop', i, false) : false,
+								enableFadeIn: this.getNodeParameter('enableFadeIn', i, false),
+								fadeInDuration: this.getNodeParameter('fadeInDuration', i, 1),
+								enableFadeOut: this.getNodeParameter('enableFadeOut', i, false),
+								fadeOutDuration: this.getNodeParameter('fadeOutDuration', i, 1),
+							};
+
+							outputPath = await executeMixAudio.call(
+								this,
+								videoPaths[0],
+								audioPaths[0],
+								videoVol,
+								audioVol,
+								matchLength,
+								advancedMixing,
 								i,
 							);
 							break;

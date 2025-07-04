@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-mediafx",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "N8N custom nodes for video editing and media processing",
   "license": "MIT",
   "author": {

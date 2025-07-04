@@ -1,6 +1,6 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import ffmpeg = require('fluent-ffmpeg');
-import { getTempFile, runFfmpeg, getDuration } from '../utils';
+import { getTempFile, runFfmpeg, getDuration, fileHasAudio } from '../utils';
 import { checkTransitionSupport } from '../utils/ffmpegVersion';
 import * as fs from 'fs-extra';
 
@@ -48,11 +48,25 @@ export async function executeTransitionApply(
 		});
 	}
 
-	// Initialize video and audio streams
-	const filterGraph: string[] = inputs.flatMap((_, i) => [
-		`[${i}:v]settb=AVTB[v${i}]`,
-		`[${i}:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a${i}]`,
-	]);
+	// Check if all input videos have audio
+	const audioChecks = await Promise.all(inputs.map((input) => fileHasAudio(input)));
+	const allHaveAudio = audioChecks.every((hasAudio) => hasAudio);
+	const someHaveAudio = audioChecks.some((hasAudio) => hasAudio);
+	
+	// Warn if only some videos have audio
+	if (someHaveAudio && !allHaveAudio) {
+		console.warn('Warning: Not all input videos have audio tracks. Audio will be excluded from the output.');
+	}
+
+	// Initialize video streams (always)
+	const filterGraph: string[] = inputs.map((_, i) => `[${i}:v]settb=AVTB[v${i}]`);
+	
+	// Initialize audio streams only if audio exists
+	if (allHaveAudio) {
+		inputs.forEach((_, i) => {
+			filterGraph.push(`[${i}:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a${i}]`);
+		});
+	}
 
 	let lastVideoOut = 'v0';
 	let lastAudioOut = 'a0';
@@ -83,13 +97,17 @@ export async function executeTransitionApply(
 				`[${fadeOutVideo}][${fadeInVideo}]overlay=enable='between(t,${fadeOutStart},${cumulativeDuration})'[${currentVideoOut}]`
 			);
 			
-			// Audio crossfade
-			filterGraph.push(
-				`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
-			);
+			// Audio crossfade only if audio exists
+			if (allHaveAudio) {
+				filterGraph.push(
+					`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
+				);
+			}
 
 			lastVideoOut = currentVideoOut;
-			lastAudioOut = currentAudioOut;
+			if (allHaveAudio) {
+				lastAudioOut = currentAudioOut;
+			}
 			cumulativeDuration += durations[i]! - duration;
 		}
 	} else {
@@ -104,22 +122,36 @@ export async function executeTransitionApply(
 			filterGraph.push(
 				`[${lastVideoOut}][${nextVideo}]xfade=transition=${effectiveTransition}:duration=${duration}:offset=${offset}[${currentVideoOut}]`,
 			);
-			filterGraph.push(
-				`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
-			);
+			if (allHaveAudio) {
+				filterGraph.push(
+					`[${lastAudioOut}][${nextAudio}]acrossfade=d=${duration}[${currentAudioOut}]`,
+				);
+			}
 
 			lastVideoOut = currentVideoOut;
-			lastAudioOut = currentAudioOut;
+			if (allHaveAudio) {
+				lastAudioOut = currentAudioOut;
+			}
 			cumulativeDuration += durations[i]! - duration;
 		}
 	}
 
+	// Build output options based on available streams
+	const outputOptions = ['-map', `[${lastVideoOut}]`];
+	if (allHaveAudio) {
+		outputOptions.push('-map', `[${lastAudioOut}]`);
+	}
+
 	command
 		.complexFilter(filterGraph)
-		.outputOptions(['-map', `[${lastVideoOut}]`, '-map', `[${lastAudioOut}]`])
-		.videoCodec('libx264')
-		.audioCodec('aac')
-		.save(outputPath);
+		.outputOptions(outputOptions)
+		.videoCodec('libx264');
+	
+	if (allHaveAudio) {
+		command.audioCodec('aac');
+	}
+	
+	command.save(outputPath);
 
 	try {
 		await runFfmpeg(command);

@@ -2,6 +2,7 @@ import { IExecuteFunctions, NodeOperationError, IDataObject } from 'n8n-workflow
 import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg, getDuration } from '../utils';
+import * as fs from 'fs-extra';
 
 export async function executeStampImage(
 	this: IExecuteFunctions,
@@ -24,8 +25,6 @@ export async function executeStampImage(
 	const enableTimeControl = options.enableTimeControl as boolean;
 	const startTime = (options.startTime as number) || 0;
 	const endTime = (options.endTime as number) || 5;
-
-
 
 	try {
 		// Get video duration for calculations
@@ -52,7 +51,7 @@ export async function executeStampImage(
 		if (!needsProcessing && !enableTimeControl) {
 			// Simplest case: direct overlay
 			complexFilter = '[0:v][1:v]overlay=x=' + x + ':y=' + y;
-		} else if (needsProcessing && !enableTimeControl) {
+		} else if (!enableTimeControl) {
 			// Process image but no time control
 			let imageFilter = '[1:v]';
 			
@@ -128,6 +127,9 @@ export async function executeStampImage(
 
 		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
+		
 		console.error('=== STAMP IMAGE ERROR ===');
 		console.error('Error details:', error);
 		console.error('========================');

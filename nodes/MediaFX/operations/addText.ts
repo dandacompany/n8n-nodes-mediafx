@@ -2,6 +2,7 @@ import { IExecuteFunctions, NodeOperationError, IDataObject } from 'n8n-workflow
 import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg, getAvailableFonts } from '../utils';
+import * as fs from 'fs-extra';
 
 function getPositionFromAlignment(
 	horizontalAlign: string,
@@ -101,17 +102,14 @@ export async function executeAddText(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
-		let message = `Error adding text overlay. Please check all text style options (e.g., color, size, position).`;
-		const errorMessage = (error as Error).message;
-		if (errorMessage.includes('Cannot find color')) {
-			message = `Error adding text overlay: An invalid color was specified. Please use a valid color name (e.g., 'yellow') or a hex code (e.g., 'FFFFFF').`;
-		} else if (errorMessage.includes('font')) {
-			message = `Error adding text overlay: There was an issue with the specified font. Please check the font name and ensure it is available.`;
-		}
-		throw new NodeOperationError(this.getNode(), `${message} FFmpeg error: ${errorMessage}`, {
-			itemIndex,
-		});
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
+		throw new NodeOperationError(
+			this.getNode(),
+			`Error adding text to video. FFmpeg error: ${(error as Error).message}`,
+			{ itemIndex },
+		);
 	}
-	return outputPath;
 } 

@@ -1,6 +1,7 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import { getTempFile, runFfmpeg } from '../utils';
 import ffmpeg = require('fluent-ffmpeg');
+import * as fs from 'fs-extra';
 
 export async function executeImageToVideo(
 	this: IExecuteFunctions,
@@ -38,7 +39,10 @@ export async function executeImageToVideo(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
 		throw new NodeOperationError(
 			this.getNode(),
 			`Error converting image to video. Please ensure the source image is valid. FFmpeg error: ${
@@ -47,6 +51,4 @@ export async function executeImageToVideo(
 			{ itemIndex },
 		);
 	}
-
-	return outputPath;
 } 

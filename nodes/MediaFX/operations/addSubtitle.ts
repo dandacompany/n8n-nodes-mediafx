@@ -144,15 +144,14 @@ export async function executeAddSubtitle(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
-		const errorMessage = (error as Error).message;
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
 		throw new NodeOperationError(
 			this.getNode(),
-			`Error burning subtitles. Please check subtitle file and style options. FFmpeg error: ${errorMessage}`,
-			{
-				itemIndex,
-			},
+			`Error adding subtitles to video. FFmpeg error: ${(error as Error).message}`,
+			{ itemIndex },
 		);
 	}
-	return outputPath;
 } 

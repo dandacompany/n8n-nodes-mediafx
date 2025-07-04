@@ -2,6 +2,7 @@ import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import * as path from 'path';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg } from '../utils';
+import * as fs from 'fs-extra';
 
 export async function executeTransitionFade(
 	this: IExecuteFunctions,
@@ -25,7 +26,11 @@ export async function executeTransitionFade(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
+		
 		// If the video has no audio, ffmpeg might throw an error for afade.
 		// We provide a more descriptive error message in that case.
 		const errorMessage = (error as Error).message;
@@ -38,5 +43,4 @@ export async function executeTransitionFade(
 			itemIndex,
 		});
 	}
-	return outputPath;
 } 

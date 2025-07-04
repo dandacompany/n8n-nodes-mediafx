@@ -17,18 +17,25 @@ function tryInitializeFfmpeg(): boolean {
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-		const installerPath = ffmpegInstaller.path;
-		if (installerPath && fs.existsSync(installerPath)) {
-			ffmpeg.setFfmpegPath(installerPath);
-			ffmpegPath = installerPath;
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
+
+		const ffmpegInstallerPath = ffmpegInstaller.path;
+		const ffprobeInstallerPath = ffprobeInstaller.path;
+
+		if (ffmpegInstallerPath && fs.existsSync(ffmpegInstallerPath) && ffprobeInstallerPath && fs.existsSync(ffprobeInstallerPath)) {
+			ffmpeg.setFfmpegPath(ffmpegInstallerPath);
+			ffmpeg.setFfprobePath(ffprobeInstallerPath);
+			ffmpegPath = ffmpegInstallerPath;
 			ffmpegInitialized = true;
-			console.log(`FFmpeg initialized with @ffmpeg-installer: ${installerPath}`);
+			console.log(`FFmpeg initialized with @ffmpeg-installer: ${ffmpegInstallerPath}`);
+			console.log(`FFprobe initialized with @ffprobe-installer: ${ffprobeInstallerPath}`);
 			return true;
 		} else {
-			console.warn('@ffmpeg-installer path exists but binary not found:', installerPath);
+			console.warn('@ffmpeg-installer or @ffprobe-installer path exists but binary not found:', {ffmpegInstallerPath, ffprobeInstallerPath});
 		}
 	} catch (error) {
-		console.warn('@ffmpeg-installer package not available:', (error as Error).message);
+		console.warn('@ffmpeg-installer or @ffprobe-installer package not available:', (error as Error).message);
 	}
 
 	// Strategy 2: Try ffmpeg-static package (fallback)
@@ -155,6 +162,37 @@ export function verifyFfmpegAvailability(): void {
 
 export function getTempFile(extension: string): string {
 	return path.join(TEMP_DIR, `${uuidv4()}${extension}`);
+}
+
+// Utility function to clean up old temporary files
+export async function cleanupOldTempFiles(maxAgeHours: number = 24): Promise<void> {
+	try {
+		if (!fs.existsSync(TEMP_DIR)) {
+			return;
+		}
+
+		const files = await fs.readdir(TEMP_DIR);
+		const now = Date.now();
+		const maxAge = maxAgeHours * 60 * 60 * 1000; // Convert hours to milliseconds
+
+		for (const file of files) {
+			const filePath = path.join(TEMP_DIR, file);
+			try {
+				const stats = await fs.stat(filePath);
+				const age = now - stats.mtime.getTime();
+				
+				if (age > maxAge) {
+					await fs.remove(filePath);
+					console.log(`Cleaned up old temp file: ${file}`);
+				}
+			} catch (error) {
+				// Ignore errors for individual files (file might be in use, etc.)
+				console.warn(`Could not clean up temp file ${file}:`, (error as Error).message);
+			}
+		}
+	} catch (error) {
+		console.warn('Error during temp file cleanup:', (error as Error).message);
+	}
 }
 
 export async function downloadSource(url: string): Promise<{ filePath: string; cleanup: () => Promise<void> }> {

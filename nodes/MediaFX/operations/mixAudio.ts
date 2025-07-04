@@ -191,8 +191,13 @@ export async function executeMixAudio(
 		if (videoCleanup) {
 			await videoCleanup();
 		}
+		
+		return outputPath;
 	} catch (error) {
-		// Clean up on error too
+		// Clean up output file if creation failed
+		await require('fs-extra').remove(outputPath).catch(() => {});
+		
+		// Clean up temporary video file if we created one
 		if (videoCleanup) {
 			await videoCleanup().catch(() => {});
 		}
@@ -202,6 +207,4 @@ export async function executeMixAudio(
 			{ itemIndex },
 		);
 	}
-
-	return outputPath;
 } 

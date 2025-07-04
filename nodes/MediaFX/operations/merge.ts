@@ -76,6 +76,8 @@ export async function executeMerge(
 	}
 
 	const intermediateFiles: { path: string; cleanup: () => Promise<void> }[] = [];
+	let outputPath: string | null = null;
+	
 	const finalCleanup = async () => {
 		for (const file of intermediateFiles) {
 			await file.cleanup();
@@ -105,7 +107,7 @@ export async function executeMerge(
 		}
 
 		// 2. Merging Stage - Using the concat protocol for stability
-		const outputPath = getTempFile(`.${outputFormat}`);
+		outputPath = getTempFile(`.${outputFormat}`);
 		const normalizedPaths = intermediateFiles.map((f) => f.path);
 
 		const concatString = `concat:${normalizedPaths.join('|')}`;
@@ -119,6 +121,11 @@ export async function executeMerge(
 
 		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		if (outputPath) {
+			await fs.remove(outputPath).catch(() => {});
+		}
+		
 		await finalCleanup();
 		throw new NodeOperationError(
 			this.getNode(),

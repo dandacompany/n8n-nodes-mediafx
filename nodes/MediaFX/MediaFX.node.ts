@@ -18,6 +18,7 @@ import {
 	getUserFonts,
 	saveUserFont,
 	validateFontKey,
+	cleanupOldTempFiles,
 } from './utils';
 import {
 	executeAddSubtitle,
@@ -135,9 +136,19 @@ export class MediaFX implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
+		// Periodically clean up old temporary files (every 10th execution)
+		if (Math.random() < 0.1) {
+			cleanupOldTempFiles(24).catch(() => {
+				// Ignore cleanup errors to avoid disrupting main operation
+			});
+		}
+
 		for (let i = 0; i < items.length; i++) {
+			let cleanup = async () => {}; // Initialize cleanup function for each iteration
+			let resource = ''; // Initialize resource variable for error handling
+			
 			try {
-				const resource = this.getNodeParameter('resource', i) as string;
+				resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
 				let resultData: IDataObject | IDataObject[] | null = null;
@@ -248,8 +259,6 @@ export class MediaFX implements INodeType {
 				// MEDIA RESOURCE OPERATIONS
 				// ===================================
 				else {
-					let cleanup = async () => {};
-
 					switch (operation) {
 						// Video Operations
 						case 'merge': {
@@ -581,6 +590,8 @@ export class MediaFX implements INodeType {
 							break;
 						}
 					}
+					
+					// Always cleanup after operations
 					await cleanup();
 				}
 
@@ -614,6 +625,14 @@ export class MediaFX implements INodeType {
 					);
 				}
 			} catch (error) {
+				// Ensure cleanup is called even if an error occurs
+				// Note: cleanup is only available for media operations, not font operations
+				if (resource !== 'font' && typeof cleanup === 'function') {
+					await cleanup().catch(() => {
+						// Ignore cleanup errors to avoid masking the original error
+					});
+				}
+				
 				if (this.continueOnFail()) {
 					returnData.push({
 						json: {

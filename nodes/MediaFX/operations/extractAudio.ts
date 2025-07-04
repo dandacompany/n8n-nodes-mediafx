@@ -1,6 +1,7 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg } from '../utils';
+import * as fs from 'fs-extra';
 
 export async function executeExtractAudio(
 	this: IExecuteFunctions,
@@ -30,7 +31,10 @@ export async function executeExtractAudio(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
 		throw new NodeOperationError(
 			this.getNode(),
 			`Error extracting audio. Please ensure the source video contains an audio track. FFmpeg error: ${
@@ -39,5 +43,4 @@ export async function executeExtractAudio(
 			{ itemIndex },
 		);
 	}
-	return outputPath;
 } 

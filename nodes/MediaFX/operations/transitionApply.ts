@@ -1,6 +1,7 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg, getDuration } from '../utils';
+import * as fs from 'fs-extra';
 
 export async function executeTransitionApply(
 	this: IExecuteFunctions,
@@ -53,7 +54,10 @@ export async function executeTransitionApply(
 
 	try {
 		await runFfmpeg(command);
+		return outputPath;
 	} catch (error) {
+		// Clean up output file if creation failed
+		await fs.remove(outputPath).catch(() => {});
 		throw new NodeOperationError(
 			this.getNode(),
 			`Error applying transition. Please check the transition effect and parameters. FFmpeg error: ${
@@ -62,6 +66,4 @@ export async function executeTransitionApply(
 			{ itemIndex },
 		);
 	}
-
-	return outputPath;
 } 

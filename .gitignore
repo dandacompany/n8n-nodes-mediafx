@@ -79,3 +79,4 @@ ref/
 .history/
 deploy.sh
 test_files/
+fonts/user/*

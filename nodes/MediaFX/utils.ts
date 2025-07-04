@@ -332,7 +332,7 @@ export function fileHasAudio(filePath: string): Promise<boolean> {
 // ====================================================================
 
 // Define paths for font management
-const BASE_FONTS_DIR = path.resolve(__dirname, '..', '..', 'fonts');
+const BASE_FONTS_DIR = path.resolve(__dirname, '..', '..', '..', 'fonts');
 const USER_FONTS_DIR = path.join(BASE_FONTS_DIR, 'user');
 const USER_FONTS_JSON = path.join(USER_FONTS_DIR, 'user-fonts.json');
 

@@ -28,7 +28,7 @@ export const subtitleProperties: INodeProperties[] = [
 	},
 
 	// ===================
-	// SUBTITLE FIELDS
+	// COMMON SOURCE FIELDS
 	// ===================
 	{
 		displayName: 'Video Source',
@@ -51,6 +51,10 @@ export const subtitleProperties: INodeProperties[] = [
 			],
 		} ],
 	},
+
+	// ===================
+	// SUBTITLE FILE SOURCE (only for addSubtitle)
+	// ===================
 	{
 		displayName: 'Subtitle File Source',
 		name: 'subtitleFileSource',
@@ -81,229 +85,212 @@ export const subtitleProperties: INodeProperties[] = [
 			},
 		],
 	},
+
+	// ===================
+	// TEXT CONTENT (only for addText)
+	// ===================
 	{
-		displayName: 'Subtitle Style',
-		name: 'subtitleStyle',
-		type: 'collection',
-		placeholder: 'Add Style Option',
-		displayOptions: {
-			show: {
-				resource: ['subtitle'],
-				operation: ['addSubtitle'],
-			},
-		},
-		default: {},
-		options: [
-			{
-				displayName: 'Font Key',
-				name: 'fontKey',
-				type: 'options',
-				typeOptions: { loadOptionsMethod: 'getFonts' },
-				default: 'noto-sans-kr',
-			},
-			{
-				displayName: 'Font Size',
-				name: 'size',
-				type: 'number',
-				default: 48,
-			},
-			{
-				displayName: 'Color',
-				name: 'color',
-				type: 'string',
-				default: 'white',
-			},
-			{
-				displayName: 'Outline Width',
-				name: 'outlineWidth',
-				type: 'number',
-				default: 1,
-				description: 'Width of the text border',
-			},
-			{
-				displayName: 'Position Type',
-				name: 'positionType',
-				type: 'options',
-				options: [
-					{ name: 'Alignment', value: 'alignment', description: 'Use preset alignment positions' },
-					{ name: 'Custom', value: 'custom', description: 'Set custom X/Y coordinates' },
-				],
-				default: 'alignment',
-			},
-			{
-				displayName: 'Horizontal Alignment',
-				name: 'horizontalAlign',
-				type: 'options',
-				options: [
-					{ name: 'Left', value: 'left' },
-					{ name: 'Center', value: 'center' },
-					{ name: 'Right', value: 'right' },
-				],
-				default: 'center',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Vertical Alignment',
-				name: 'verticalAlign',
-				type: 'options',
-				options: [
-					{ name: 'Top', value: 'top' },
-					{ name: 'Middle', value: 'middle' },
-					{ name: 'Bottom', value: 'bottom' },
-				],
-				default: 'bottom',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Horizontal Padding',
-				name: 'paddingX',
-				type: 'number',
-				default: 20,
-				description: 'Horizontal padding in pixels from left/right edges',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Vertical Padding',
-				name: 'paddingY',
-				type: 'number',
-				default: 20,
-				description: 'Vertical padding in pixels from top/bottom edges',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Position X',
-				name: 'x',
-				type: 'string',
-				default: '(w-text_w)/2',
-				description: "Custom X position. Use ffmpeg expressions (e.g., '100' or '(w-text_w)/2')",
-				displayOptions: { show: { positionType: ['custom'] } },
-			},
-			{
-				displayName: 'Position Y',
-				name: 'y',
-				type: 'string',
-				default: 'h-th-50',
-				description: "Custom Y position. Use ffmpeg expressions (e.g., '100' or 'h-th-50')",
-				displayOptions: { show: { positionType: ['custom'] } },
-			},
-		],
-	},
-	{
-		displayName: 'Subtitle Text',
-		name: 'textOptions',
-		type: 'collection',
+		displayName: 'Text',
+		name: 'text',
+		type: 'string',
+		default: 'Hello, n8n!',
 		displayOptions: {
 			show: {
 				resource: ['subtitle'],
 				operation: ['addText'],
 			},
 		},
-		default: {},
-		placeholder: 'Add Text Setting',
+		description: 'Text content to display',
+	},
+	{
+		displayName: 'Start Time (seconds)',
+		name: 'startTime',
+		type: 'number',
+		default: 0,
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+				operation: ['addText'],
+			},
+		},
+		description: 'When the text should start appearing',
+	},
+	{
+		displayName: 'End Time (seconds)',
+		name: 'endTime',
+		type: 'number',
+		default: 5,
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+				operation: ['addText'],
+			},
+		},
+		description: 'When the text should stop appearing',
+	},
+
+	// ===================
+	// COMMON FONT & STYLE OPTIONS
+	// ===================
+	{
+		displayName: 'Font Key',
+		name: 'fontKey',
+		type: 'options',
+		typeOptions: { loadOptionsMethod: 'getFonts' },
+		default: 'noto-sans-kr',
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		description: 'Font to use for the text',
+	},
+	{
+		displayName: 'Font Size',
+		name: 'size',
+		type: 'number',
+		default: 48,
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		description: 'Size of the text in pixels',
+	},
+	{
+		displayName: 'Color',
+		name: 'color',
+		type: 'string',
+		default: 'white',
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		description: 'Text color (e.g., white, #FF0000, red)',
+	},
+	{
+		displayName: 'Outline Width',
+		name: 'outlineWidth',
+		type: 'number',
+		default: 1,
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		description: 'Width of the text border/outline',
+	},
+
+	// ===================
+	// POSITION OPTIONS
+	// ===================
+	{
+		displayName: 'Position Type',
+		name: 'positionType',
+		type: 'options',
 		options: [
-			{
-				displayName: 'Text',
-				name: 'text',
-				type: 'string',
-				default: 'Hello, n8n!',
-			},
-			{
-				displayName: 'Start Time (seconds)',
-				name: 'startTime',
-				type: 'number',
-				default: 0,
-			},
-			{
-				displayName: 'End Time (seconds)',
-				name: 'endTime',
-				type: 'number',
-				default: 5,
-			},
-			{
-				displayName: 'Font Key',
-				name: 'fontKey',
-				type: 'options',
-				typeOptions: { loadOptionsMethod: 'getFonts' },
-				default: 'noto-sans-kr',
-			},
-			{
-				displayName: 'Font Size',
-				name: 'size',
-				type: 'number',
-				default: 48,
-			},
-			{
-				displayName: 'Color',
-				name: 'color',
-				type: 'string',
-				default: 'white',
-			},
-			{
-				displayName: 'Position Type',
-				name: 'positionType',
-				type: 'options',
-				options: [
-					{ name: 'Alignment', value: 'alignment', description: 'Use preset alignment positions' },
-					{ name: 'Custom', value: 'custom', description: 'Set custom X/Y coordinates' },
-				],
-				default: 'alignment',
-			},
-			{
-				displayName: 'Horizontal Alignment',
-				name: 'horizontalAlign',
-				type: 'options',
-				options: [
-					{ name: 'Left', value: 'left' },
-					{ name: 'Center', value: 'center' },
-					{ name: 'Right', value: 'right' },
-				],
-				default: 'center',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Vertical Alignment',
-				name: 'verticalAlign',
-				type: 'options',
-				options: [
-					{ name: 'Top', value: 'top' },
-					{ name: 'Middle', value: 'middle' },
-					{ name: 'Bottom', value: 'bottom' },
-				],
-				default: 'bottom',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Horizontal Padding',
-				name: 'paddingX',
-				type: 'number',
-				default: 20,
-				description: 'Horizontal padding in pixels from left/right edges',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Vertical Padding',
-				name: 'paddingY',
-				type: 'number',
-				default: 20,
-				description: 'Vertical padding in pixels from top/bottom edges',
-				displayOptions: { show: { positionType: ['alignment'] } },
-			},
-			{
-				displayName: 'Position X',
-				name: 'x',
-				type: 'string',
-				default: '(w-text_w)/2',
-				description: "Custom X position. Use ffmpeg expressions (e.g., '100' or '(w-text_w)/2')",
-				displayOptions: { show: { positionType: ['custom'] } },
-			},
-			{
-				displayName: 'Position Y',
-				name: 'y',
-				type: 'string',
-				default: 'h-th-10',
-				description: "Custom Y position. Use ffmpeg expressions (e.g., '100' or 'h-th-10')",
-				displayOptions: { show: { positionType: ['custom'] } },
-			},
+			{ name: 'Alignment', value: 'alignment', description: 'Use preset alignment positions' },
+			{ name: 'Custom', value: 'custom', description: 'Set custom X/Y coordinates' },
 		],
+		default: 'alignment',
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		description: 'How to position the text',
+	},
+
+	// --- ALIGNMENT POSITION OPTIONS ---
+	{
+		displayName: 'Horizontal Alignment',
+		name: 'horizontalAlign',
+		type: 'options',
+		options: [
+			{ name: 'Left', value: 'left' },
+			{ name: 'Center', value: 'center' },
+			{ name: 'Right', value: 'right' },
+		],
+		default: 'center',
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['alignment'] 
+			} 
+		},
+		description: 'Horizontal alignment of the text',
+	},
+	{
+		displayName: 'Vertical Alignment',
+		name: 'verticalAlign',
+		type: 'options',
+		options: [
+			{ name: 'Top', value: 'top' },
+			{ name: 'Middle', value: 'middle' },
+			{ name: 'Bottom', value: 'bottom' },
+		],
+		default: 'bottom',
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['alignment'] 
+			} 
+		},
+		description: 'Vertical alignment of the text',
+	},
+	{
+		displayName: 'Horizontal Padding',
+		name: 'paddingX',
+		type: 'number',
+		default: 20,
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['alignment'] 
+			} 
+		},
+		description: 'Horizontal padding in pixels from left/right edges',
+	},
+	{
+		displayName: 'Vertical Padding',
+		name: 'paddingY',
+		type: 'number',
+		default: 20,
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['alignment'] 
+			} 
+		},
+		description: 'Vertical padding in pixels from top/bottom edges',
+	},
+
+	// --- CUSTOM POSITION OPTIONS ---
+	{
+		displayName: 'Position X',
+		name: 'x',
+		type: 'string',
+		default: '(w-text_w)/2',
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['custom'] 
+			} 
+		},
+		description: "Custom X position. Use ffmpeg expressions (e.g., '100' or '(w-text_w)/2')",
+	},
+	{
+		displayName: 'Position Y',
+		name: 'y',
+		type: 'string',
+		default: 'h-th-50',
+		displayOptions: { 
+			show: { 
+				resource: ['subtitle'],
+				positionType: ['custom'] 
+			} 
+		},
+		description: "Custom Y position. Use ffmpeg expressions (e.g., '100' or 'h-th-50')",
 	},
 ]; 

@@ -381,7 +381,7 @@ export class MediaFX implements INodeType {
 						}
 
 						// Subtitle Operations
-						case 'addSubtitleFile': {
+						case 'addSubtitle': {
 							const videoSourceParam = this.getNodeParameter('source', i) as {
 								source: { sourceType: string; value: string; binaryProperty?: string };
 							};
@@ -405,7 +405,21 @@ export class MediaFX implements INodeType {
 								await subFileCleanup();
 							};
 
-							const style = this.getNodeParameter('subtitleStyle', i, {}) as IDataObject;
+							// Collect style options from individual parameters
+							const style: IDataObject = {
+								fontKey: this.getNodeParameter('fontKey', i, 'noto-sans-kr'),
+								size: this.getNodeParameter('size', i, 48),
+								color: this.getNodeParameter('color', i, 'white'),
+								outlineWidth: this.getNodeParameter('outlineWidth', i, 1),
+								positionType: this.getNodeParameter('positionType', i, 'alignment'),
+								horizontalAlign: this.getNodeParameter('horizontalAlign', i, 'center'),
+								verticalAlign: this.getNodeParameter('verticalAlign', i, 'bottom'),
+								paddingX: this.getNodeParameter('paddingX', i, 20),
+								paddingY: this.getNodeParameter('paddingY', i, 20),
+								x: this.getNodeParameter('x', i, '(w-text_w)/2'),
+								y: this.getNodeParameter('y', i, 'h-th-50'),
+							};
+
 							outputPath = await executeAddSubtitle.call(
 								this,
 								videoPaths[0],
@@ -422,8 +436,29 @@ export class MediaFX implements INodeType {
 							};
 							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
 							cleanup = c;
-							const textOptions = this.getNodeParameter('textOptions', i, {}) as IDataObject;
-							const text = (textOptions.text as string) || 'Hello, n8n!';
+
+							// Get text content and timing
+							const text = this.getNodeParameter('text', i, 'Hello, n8n!') as string;
+							const startTime = this.getNodeParameter('startTime', i, 0) as number;
+							const endTime = this.getNodeParameter('endTime', i, 5) as number;
+
+							// Collect style options from individual parameters
+							const textOptions: IDataObject = {
+								fontKey: this.getNodeParameter('fontKey', i, 'noto-sans-kr'),
+								size: this.getNodeParameter('size', i, 48),
+								color: this.getNodeParameter('color', i, 'white'),
+								outlineWidth: this.getNodeParameter('outlineWidth', i, 1),
+								positionType: this.getNodeParameter('positionType', i, 'alignment'),
+								horizontalAlign: this.getNodeParameter('horizontalAlign', i, 'center'),
+								verticalAlign: this.getNodeParameter('verticalAlign', i, 'bottom'),
+								paddingX: this.getNodeParameter('paddingX', i, 20),
+								paddingY: this.getNodeParameter('paddingY', i, 20),
+								x: this.getNodeParameter('x', i, '(w-text_w)/2'),
+								y: this.getNodeParameter('y', i, 'h-th-10'),
+								startTime,
+								endTime,
+							};
+
 							outputPath = await executeAddText.call(this, paths[0], text, textOptions, i);
 							break;
 						}

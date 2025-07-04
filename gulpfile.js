@@ -11,4 +11,12 @@ function buildIcons() {
     .pipe(gulp.dest('dist'));
 }
 
+function buildFonts() {
+  return gulp
+    .src('fonts/**/*')
+    .pipe(gulp.dest('dist/fonts'));
+}
+
 exports['build:icons'] = buildIcons;
+exports['build:fonts'] = buildFonts;
+exports['build'] = gulp.parallel(buildIcons, buildFonts);

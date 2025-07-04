@@ -5,6 +5,7 @@ import ffmpeg = require('fluent-ffmpeg');
 import axios from 'axios';
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import { IDataObject } from 'n8n-workflow';
+import * as os from 'os';
 
 // Initialize FFmpeg with comprehensive fallback strategy
 let ffmpegPath: string | null = null;
@@ -24,6 +25,18 @@ function tryInitializeFfmpeg(): boolean {
 		const ffprobeInstallerPath = ffprobeInstaller.path;
 
 		if (ffmpegInstallerPath && fs.existsSync(ffmpegInstallerPath) && ffprobeInstallerPath && fs.existsSync(ffprobeInstallerPath)) {
+			// Set executable permissions dynamically
+			if (os.platform() !== 'win32') {
+				try {
+					fs.chmodSync(ffmpegInstallerPath, '755');
+					fs.chmodSync(ffprobeInstallerPath, '755');
+					console.log('Dynamically set permissions for ffmpeg and ffprobe.');
+				} catch (permissionError) {
+					console.warn('Failed to set executable permissions dynamically:', permissionError);
+					// Continue anyway, as it might work in some environments
+				}
+			}
+
 			ffmpeg.setFfmpegPath(ffmpegInstallerPath);
 			ffmpeg.setFfprobePath(ffprobeInstallerPath);
 			ffmpegPath = ffmpegInstallerPath;

@@ -16,19 +16,15 @@ export const resourceSelection: INodeProperties[] = [
 				value: 'audio',
 			},
 			{
-				name: 'Subtitle & Text',
+				name: 'Text',
 				value: 'subtitle',
-			},
-			{
-				name: 'Transition Effects',
-				value: 'transition',
 			},
 			{
 				name: 'Image',
 				value: 'image',
 			},
 			{
-				name: 'Font Management',
+				name: 'Font',
 				value: 'font',
 			},
 		],

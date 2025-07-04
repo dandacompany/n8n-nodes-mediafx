@@ -19,7 +19,7 @@ export const subtitleProperties: INodeProperties[] = [
 				description: 'Add SRT subtitle file to video',
 			},
 			{
-				name: 'Add Text',
+				name: 'Add String',
 				value: 'addText',
 				description: 'Add custom text overlay to video',
 			},

@@ -19,7 +19,7 @@ This repository contains a custom n8n node for comprehensive, local media proces
 
 ## Features
 
--   **Video Processing**: Merge multiple clips, trim sections, apply cross-fade transitions, and add fade-in/out effects.
+-   **Video Processing**: Merge multiple clips, trim sections, apply transition effects between videos with automatic FFmpeg compatibility detection, and add fade-in/out effects to single videos.
 -   **Advanced Audio Manipulation**: 
     - Extract audio from video in multiple formats (MP3, WAV, AAC, FLAC)
     - Mix audio tracks with precise volume control for each source
@@ -62,14 +62,12 @@ This is the main node for all media processing operations. You select a `resourc
 #### **Video** Resource
 -   `Merge`: Combine multiple video files into a single video.
 -   `Trim`: Cut a video to a specific start and end time.
--   `Mix Audio`: Mix an audio file into the video's existing audio track.
--   `Add Text`: Burn a text overlay onto the video.
--   `Add Subtitle File`: Add subtitles from an `.srt` file.
--   `Stamp Image`: Overlay an image (watermark) on the video.
+-   `Transition`: Apply transition effects between multiple videos with automatic FFmpeg version detection and fallback support.
+-   `Fade`: Apply fade in/out effects to a single video.
 
 #### **Audio** Resource
 -   `Extract`: Extract the audio track from a video file into a specified format (MP3, WAV, AAC, FLAC).
--   `Mix Audio`: Mix a primary video's audio with a secondary audio source with advanced features:
+-   `Mix`: Mix a primary video's audio with a secondary audio source with advanced features:
     - **Volume Control**: Independent volume adjustment for both primary and secondary sources
     - **Full Mix Mode**: Mix audio across the entire duration (shortest/longest/first source)
     - **Partial Mix Mode**: Insert audio at specific time ranges with precise start time and duration
@@ -83,16 +81,14 @@ This is the main node for all media processing operations. You select a `resourc
     - **Rotation & Opacity**: Angle adjustment and transparency control
     - **Time Control**: Display for specific time ranges or entire video duration
 
-#### **Transition** Resource
--   `Apply`: Apply a transition effect between two or more video clips.
--   `Fade`: Apply a fade-in or fade-out effect to a video clip.
+#### **Text** Resource
+-   `Add String`: Burn a text overlay onto the video.
+-   `Add Subtitle`: Add subtitles from an `.srt` file.
 
 #### **Font** Resource
 -   `List`: Get a list of all available system and user-uploaded fonts.
 -   `Upload`: Upload a custom font file (`.ttf`, `.otf`) for use in text operations.
 -   `Delete`: Remove a previously uploaded user font.
--   `Preview`: Get metadata for a specific font.
--   `Validate`: Check if a font key is unique before uploading.
 
 ## Usage Examples
 

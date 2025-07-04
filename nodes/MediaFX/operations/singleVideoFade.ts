@@ -3,7 +3,7 @@ import ffmpeg = require('fluent-ffmpeg');
 import { getTempFile, runFfmpeg } from '../utils';
 import * as fs from 'fs-extra';
 
-export async function executeTransitionFade(
+export async function executeSingleVideoFade(
 	this: IExecuteFunctions,
 	input: string,
 	// effect is 'in' or 'out' from the UI options

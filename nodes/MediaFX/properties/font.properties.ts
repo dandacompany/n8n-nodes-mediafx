@@ -13,29 +13,19 @@ export const fontProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'List Fonts',
+				name: 'List',
 				value: 'list',
 				description: 'Get all available fonts',
 			},
 			{
-				name: 'Upload Font',
+				name: 'Upload',
 				value: 'upload',
 				description: 'Upload a new font file',
 			},
 			{
-				name: 'Delete Font',
+				name: 'Delete',
 				value: 'delete',
 				description: 'Delete a user font',
-			},
-			{
-				name: 'Get Font Preview',
-				value: 'preview',
-				description: 'Get font information and preview',
-			},
-			{
-				name: 'Validate Font Key',
-				value: 'validate',
-				description: 'Check if font key is available',
 			},
 		],
 		default: 'list',
@@ -150,28 +140,11 @@ export const fontProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['font'],
-				operation: ['delete', 'preview'],
+				operation: ['delete'],
 			},
 		},
 		default: '',
 		description: 'Font to operate on',
-		required: true,
-	},
-
-	// Font Key Validation
-	{
-		displayName: 'Font Key to Validate',
-		name: 'fontKeyToValidate',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['font'],
-				operation: ['validate'],
-			},
-		},
-		default: '',
-		placeholder: 'my-new-font-key',
-		description: 'Font key to check for availability',
 		required: true,
 	},
 

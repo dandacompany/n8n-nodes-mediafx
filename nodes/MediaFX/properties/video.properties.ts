@@ -23,6 +23,16 @@ export const videoProperties: INodeProperties[] = [
 				value: 'trim',
 				description: 'Cut a video to a specific start and end time',
 			},
+			{
+				name: 'Transition',
+				value: 'multiTransition',
+				description: 'Apply transition effects between multiple videos',
+			},
+			{
+				name: 'Fade',
+				value: 'singleFade',
+				description: 'Apply fade in/out effects to a single video',
+			},
 		],
 		default: 'merge',
 	},
@@ -187,14 +197,122 @@ export const videoProperties: INodeProperties[] = [
 	},
 
 	// ===================
-	// AUDIO MIX FIELDS
+	// MULTI-VIDEO TRANSITION FIELDS
+	// ===================
+	{
+		displayName: 'Video Sources',
+		name: 'transitionSources',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['multiTransition'],
+			},
+		},
+		default: [],
+		options: [
+			{
+				displayName: 'Source',
+				name: 'sources',
+				values: [
+					{
+						displayName: 'Source Type',
+						name: 'sourceType',
+						type: 'options',
+						options: [ { name: 'URL', value: 'url' }, { name: 'Binary Data', value: 'binary' } ],
+						default: 'url',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						placeholder: 'https://example.com/video.mp4 or /data/video.mp4',
+						displayOptions: { show: { sourceType: ['url'] } },
+					},
+					{
+						displayName: 'Binary Property',
+						name: 'binaryProperty',
+						type: 'string',
+						default: 'data',
+						description: 'Name of the binary property containing video data',
+						displayOptions: { show: { sourceType: ['binary'] } },
+					},
+				],
+			},
+		],
+	},
+	{
+		displayName: 'Transition Effect',
+		name: 'transitionEffect',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getTransitionEffects',
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['multiTransition'],
+			},
+		},
+		default: 'fade',
+		description: 'Type of transition effect to apply',
+	},
+	{
+		displayName: 'Transition Duration (seconds)',
+		name: 'transitionDuration',
+		type: 'number',
+		typeOptions: {
+			minValue: 0.1,
+			maxValue: 10,
+			numberStepSize: 0.1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['multiTransition'],
+			},
+		},
+		default: 1.5,
+		description: 'Duration of transition effect in seconds',
+	},
+	{
+		displayName: 'Output Format',
+		name: 'transitionOutputFormat',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['multiTransition', 'singleFade'],
+			},
+		},
+		options: [
+			{ name: 'MP4', value: 'mp4' },
+			{ name: 'MOV', value: 'mov' },
+			{ name: 'AVI', value: 'avi' },
+			{ name: 'MKV', value: 'mkv' },
+		],
+		default: 'mp4',
+		description: 'The format of the output video file.',
+	},
+
+	// ===================
+	// SINGLE VIDEO FADE FIELDS
 	// ===================
 	{
 		displayName: 'Video Source',
-		name: 'mixVideoSource',
+		name: 'fadeSource',
 		type: 'fixedCollection',
 		placeholder: 'Add Video Source',
-		displayOptions: { show: { resource: ['video'], operation: ['mixAudio'] } },
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['singleFade'],
+			},
+		},
 		default: {},
 		options: [ {
 			displayName: 'Source',
@@ -211,90 +329,43 @@ export const videoProperties: INodeProperties[] = [
 		} ],
 	},
 	{
-		displayName: 'Audio Source',
-		name: 'mixAudioSource',
-		type: 'fixedCollection',
-		placeholder: 'Add Audio Source',
-		displayOptions: { show: { resource: ['video'], operation: ['mixAudio'] } },
-		default: {},
-		options: [ {
-			displayName: 'Source',
-			name: 'source',
-			values: [
-				{
-					displayName: 'Source Type', name: 'sourceType', type: 'options',
-					options: [ { name: 'URL', value: 'url' }, { name: 'Binary Data', value: 'binary' } ],
-					default: 'url',
-				},
-				{ displayName: 'Value', name: 'value', type: 'string', default: '', placeholder: 'https://example.com/music.mp3' , displayOptions: { show: { sourceType: ['url'] } }},
-				{ displayName: 'Binary Property', name: 'binaryProperty', type: 'string', default: 'data' , displayOptions: { show: { sourceType: ['binary'] } }},
-			],
-		} ],
-	},
-	{
-		displayName: 'Video Volume',
-		name: 'videoVolume',
-		type: 'number',
-		typeOptions: {
-			minValue: 0,
-			maxValue: 2,
-			numberStepSize: 0.1,
-		},
-		displayOptions: {
-			show: {
-				resource: ['video'],
-				operation: ['mixAudio'],
-			},
-		},
-		default: 0.8,
-		description: 'Video audio volume (0.0 - 2.0)',
-	},
-	{
-		displayName: 'Audio Volume',
-		name: 'audioVolume',
-		type: 'number',
-		typeOptions: {
-			minValue: 0,
-			maxValue: 2,
-			numberStepSize: 0.1,
-		},
-		displayOptions: {
-			show: {
-				resource: ['video'],
-				operation: ['mixAudio'],
-			},
-		},
-		default: 0.5,
-		description: 'Background audio volume (0.0 - 2.0)',
-	},
-	{
-		displayName: 'Match Length To',
-		name: 'matchLength',
+		displayName: 'Fade Effect',
+		name: 'fadeEffect',
 		type: 'options',
 		displayOptions: {
 			show: {
 				resource: ['video'],
-				operation: ['mixAudio'],
+				operation: ['singleFade'],
 			},
 		},
 		options: [
-			{
-				name: 'Shortest',
-				value: 'shortest',
-				description: 'Ends when the shortest input (video or audio) ends',
-			},
-			{
-				name: 'Video',
-				value: 'video',
-				description: 'Trims or loops audio to match the video duration',
-			},
-			{
-				name: 'Audio',
-				value: 'audio',
-				description: 'Trims video to match the audio duration',
-			},
+			{ name: 'Fade In', value: 'in' },
+			{ name: 'Fade Out', value: 'out' },
 		],
-		default: 'shortest',
-		description: 'Choose how to determine the output duration when mixing',
+		default: 'in',
+	},
+	{
+		displayName: 'Fade Start Time (seconds)',
+		name: 'fadeStartTime',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['singleFade'],
+			},
+		},
+		default: 0,
+	},
+	{
+		displayName: 'Fade Duration (seconds)',
+		name: 'fadeDuration',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['singleFade'],
+			},
+		},
+		default: 1,
 	},
 ]; 

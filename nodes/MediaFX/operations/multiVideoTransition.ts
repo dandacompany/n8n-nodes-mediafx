@@ -4,7 +4,7 @@ import { getTempFile, runFfmpeg, getDuration, fileHasAudio } from '../utils';
 import { checkTransitionSupport } from '../utils/ffmpegVersion';
 import * as fs from 'fs-extra';
 
-export async function executeTransitionApply(
+export async function executeMultiVideoTransition(
 	this: IExecuteFunctions,
 	inputs: string[],
 	transition: string,
@@ -75,74 +75,92 @@ export async function executeTransitionApply(
 	// Use different filter strategies based on transition type
 	if (effectiveTransition === 'fade' || effectiveTransition === 'fadeblack' || effectiveTransition === 'fadewhite') {
 		// Fallback implementation for fade transitions without xfade
-		// Create properly timed overlays for transition duration only
+		// Simply concatenate videos with fade effects applied to each segment
 		
-		for (let i = 1; i < inputs.length; i++) {
-			const nextVideo = `v${i}`;
-			const nextAudio = `a${i}`;
-			const currentVideoOut = `vout${i}`;
-			const currentAudioOut = `aout${i}`;
+		const videoSegments: string[] = [];
+		const audioSegments: string[] = [];
+		
+		for (let i = 0; i < inputs.length; i++) {
+			const videoDuration = durations[i]!;
+			const isFirst = i === 0;
+			const isLast = i === inputs.length - 1;
+			const videoSegment = `vseg${i}`;
 			
-			// Calculate timing - each video should transition at its end
-			const transitionStart = cumulativeDuration - duration;
-			
-			// Extend the previous video segment to include the transition
-			const extendedPrev = `ext${i}`;
-			filterGraph.push(
-				`[${lastVideoOut}]tpad=stop_duration=${duration}[${extendedPrev}]`
-			);
-			
-			// Apply fade out to the extended previous video
-			const fadeOutVideo = `fadeout${i}`;
-			filterGraph.push(
-				`[${extendedPrev}]fade=t=out:st=${transitionStart}:d=${duration}[${fadeOutVideo}]`
-			);
-			
-			// Prepare the next video with fade in and delay it to start at transition time
-			const fadeInVideo = `fadein${i}`;
-			const delayedVideo = `delayed${i}`;
-			
-			filterGraph.push(
-				`[${nextVideo}]fade=t=in:st=0:d=${duration}[${fadeInVideo}]`,
-				`[${fadeInVideo}]tpad=start_duration=${transitionStart}[${delayedVideo}]`
-			);
-			
-			// Overlay the videos during transition period only
-			filterGraph.push(
-				`[${fadeOutVideo}][${delayedVideo}]overlay[${currentVideoOut}]`
-			);
-			
-			// Audio crossfade only if audio exists
-			if (allHaveAudio) {
-				// Extend previous audio and apply fade out
-				const extendedPrevAudio = `aext${i}`;
-				const fadeOutAudio = `afadeout${i}`;
-				
+			if (isFirst && isLast) {
+				// Only one video - no transitions needed
+				videoSegments.push(`v${i}`);
+			} else if (isFirst) {
+				// First video: fade out at the end
+				const fadeOutStart = videoDuration - duration;
 				filterGraph.push(
-					`[${lastAudioOut}]apad=pad_dur=${duration}[${extendedPrevAudio}]`,
-					`[${extendedPrevAudio}]afade=t=out:st=${transitionStart}:d=${duration}[${fadeOutAudio}]`
+					`[v${i}]fade=t=out:st=${fadeOutStart}:d=${duration}[${videoSegment}]`
 				);
-				
-				// Prepare next audio with fade in and delay
-				const fadeInAudio = `afadein${i}`;
-				const delayedAudio = `adelayed${i}`;
-				
+				videoSegments.push(videoSegment);
+			} else if (isLast) {
+				// Last video: fade in at the beginning
 				filterGraph.push(
-					`[${nextAudio}]afade=t=in:st=0:d=${duration}[${fadeInAudio}]`,
-					`[${fadeInAudio}]adelay=${Math.floor(transitionStart * 1000)}|${Math.floor(transitionStart * 1000)}[${delayedAudio}]`
+					`[v${i}]fade=t=in:st=0:d=${duration}[${videoSegment}]`
 				);
-				
-				// Mix the audio tracks
+				videoSegments.push(videoSegment);
+			} else {
+				// Middle videos: fade in at start, fade out at end
+				const fadeOutStart = videoDuration - duration;
 				filterGraph.push(
-					`[${fadeOutAudio}][${delayedAudio}]amix=inputs=2:duration=longest[${currentAudioOut}]`
+					`[v${i}]fade=t=in:st=0:d=${duration},fade=t=out:st=${fadeOutStart}:d=${duration}[${videoSegment}]`
 				);
+				videoSegments.push(videoSegment);
 			}
-
-			lastVideoOut = currentVideoOut;
-			if (allHaveAudio) {
-				lastAudioOut = currentAudioOut;
+		}
+		
+		// Concatenate all video segments
+		if (videoSegments.length === 1) {
+			lastVideoOut = videoSegments[0];
+		} else {
+			lastVideoOut = 'vconcat';
+			const concatFilter = videoSegments.map(seg => `[${seg}]`).join('') + 
+				`concat=n=${videoSegments.length}:v=1:a=0[${lastVideoOut}]`;
+			filterGraph.push(concatFilter);
+		}
+		
+		// Handle audio if it exists
+		if (allHaveAudio) {
+			for (let i = 0; i < inputs.length; i++) {
+				const audioDuration = durations[i]!;
+				const isFirst = i === 0;
+				const isLast = i === inputs.length - 1;
+				const audioSegment = `aseg${i}`;
+				
+				if (isFirst && isLast) {
+					audioSegments.push(`a${i}`);
+				} else if (isFirst) {
+					const fadeOutStart = audioDuration - duration;
+					filterGraph.push(
+						`[a${i}]afade=t=out:st=${fadeOutStart}:d=${duration}[${audioSegment}]`
+					);
+					audioSegments.push(audioSegment);
+				} else if (isLast) {
+					filterGraph.push(
+						`[a${i}]afade=t=in:st=0:d=${duration}[${audioSegment}]`
+					);
+					audioSegments.push(audioSegment);
+				} else {
+					const fadeOutStart = audioDuration - duration;
+					filterGraph.push(
+						`[a${i}]afade=t=in:st=0:d=${duration},afade=t=out:st=${fadeOutStart}:d=${duration}[${audioSegment}]`
+					);
+					audioSegments.push(audioSegment);
+				}
 			}
-			cumulativeDuration += durations[i]! - duration;
+			
+			// Concatenate all audio segments
+			if (audioSegments.length === 1) {
+				lastAudioOut = audioSegments[0];
+			} else {
+				lastAudioOut = 'aconcat';
+				const audioConcatFilter = audioSegments.map(seg => `[${seg}]`).join('') + 
+					`concat=n=${audioSegments.length}:v=0:a=1[${lastAudioOut}]`;
+				filterGraph.push(audioConcatFilter);
+			}
 		}
 	} else {
 		// Use xfade for supported transitions

@@ -322,4 +322,21 @@ export const imageProperties: INodeProperties[] = [
 		},
 		description: 'Opacity of the stamp (0.0 = transparent, 1.0 = opaque)',
 	},
+	
+	// ===================
+	// OUTPUT FIELD NAME
+	// ===================
+	{
+		displayName: 'Output Field Name',
+		name: 'outputFieldName',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['image'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property where the output video will be stored',
+		placeholder: 'data',
+	},
 ]; 

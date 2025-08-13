@@ -58,8 +58,44 @@ export async function executeMultiVideoTransition(
 		console.warn('Warning: Not all input videos have audio tracks. Audio will be excluded from the output.');
 	}
 
-	// Initialize video streams (always)
-	const filterGraph: string[] = inputs.map((_, i) => `[${i}:v]settb=AVTB[v${i}]`);
+	// Get video dimensions using ffprobe to determine common resolution
+	const getDimensions = async (inputPath: string): Promise<{ width: number; height: number }> => {
+		return new Promise((resolve, reject) => {
+			ffmpeg.ffprobe(inputPath, (err, metadata) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				const videoStream = metadata.streams.find(s => s.codec_type === 'video');
+				if (!videoStream || !videoStream.width || !videoStream.height) {
+					reject(new Error('Could not get video dimensions'));
+					return;
+				}
+				resolve({ width: videoStream.width, height: videoStream.height });
+			});
+		});
+	};
+
+	// Get dimensions of all input videos
+	const dimensions = await Promise.all(inputs.map(input => getDimensions(input)));
+	
+	// Find the maximum dimensions to use as target resolution
+	const targetWidth = Math.max(...dimensions.map(d => d.width));
+	const targetHeight = Math.max(...dimensions.map(d => d.height));
+	
+	console.log(`[MediaFX] Target resolution for transition: ${targetWidth}x${targetHeight}`);
+
+	// Initialize video streams with scaling to common resolution
+	const filterGraph: string[] = inputs.map((_, i) => {
+		const dim = dimensions[i];
+		if (dim.width !== targetWidth || dim.height !== targetHeight) {
+			// Scale and pad to maintain aspect ratio
+			return `[${i}:v]scale=${targetWidth}:${targetHeight}:force_original_aspect_ratio=decrease,pad=${targetWidth}:${targetHeight}:(ow-iw)/2:(oh-ih)/2:black,settb=AVTB[v${i}]`;
+		} else {
+			// No scaling needed
+			return `[${i}:v]settb=AVTB[v${i}]`;
+		}
+	});
 	
 	// Initialize audio streams only if audio exists
 	if (allHaveAudio) {

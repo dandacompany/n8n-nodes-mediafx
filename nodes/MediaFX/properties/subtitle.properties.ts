@@ -293,4 +293,21 @@ export const subtitleProperties: INodeProperties[] = [
 		},
 		description: "Custom Y position. Use ffmpeg expressions (e.g., '100' or 'h-th-50')",
 	},
+	
+	// ===================
+	// OUTPUT FIELD NAME
+	// ===================
+	{
+		displayName: 'Output Field Name',
+		name: 'outputFieldName',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['subtitle'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property where the output video will be stored',
+		placeholder: 'data',
+	},
 ]; 

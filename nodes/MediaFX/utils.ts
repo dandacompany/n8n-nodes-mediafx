@@ -175,20 +175,46 @@ export async function resolveInputs(
 						'Binary property name is not defined for binary source.',
 					);
 				}
-				const item = executeFunctions.getInputData()[itemIndex];
-				const binaryData = item.binary;
-
+				
+				const inputData = executeFunctions.getInputData();
+				let binaryData = inputData[itemIndex]?.binary;
+				let actualItemIndex = itemIndex;
+				
+				// Check if binary data exists in current item
 				if (!binaryData || !binaryData[source.binaryProperty]) {
-					throw new NodeOperationError(
-						executeFunctions.getNode(),
-						`Binary data not found in property "${source.binaryProperty}"`,
-						{ itemIndex },
-					);
+					// For merged inputs, check the first item (index 0) as well
+					// This handles cases where Merge node combines multiple inputs into one item
+					if (itemIndex !== 0 && inputData[0]?.binary && inputData[0].binary[source.binaryProperty]) {
+						binaryData = inputData[0].binary;
+						actualItemIndex = 0;
+						console.log(`[MediaFX] Using binary data from item 0 for property "${source.binaryProperty}"`);
+					} else {
+						// Provide helpful debugging information
+						const currentItemProps = binaryData ? Object.keys(binaryData) : [];
+						const firstItemProps = inputData[0]?.binary ? Object.keys(inputData[0].binary) : [];
+						const allProps = [...new Set([...currentItemProps, ...firstItemProps])];
+						
+						const errorMessage = `Binary data not found in property "${source.binaryProperty}". ` +
+							`Available properties in current item: ${currentItemProps.length > 0 ? currentItemProps.join(', ') : 'none'}. ` +
+							(itemIndex !== 0 && firstItemProps.length > 0 ? 
+								`Available in first item: ${firstItemProps.join(', ')}. ` : '') +
+							`All available: ${allProps.length > 0 ? allProps.join(', ') : 'none'}`;
+						
+						throw new NodeOperationError(
+							executeFunctions.getNode(),
+							errorMessage,
+							{ 
+								itemIndex,
+								description: 'Make sure the binary property name matches the output from the previous node. ' +
+									'If using a Merge node, check that the binary properties are correctly named (e.g., data1, data2).'
+							},
+						);
+					}
 				}
 
 				const originalFilename = binaryData[source.binaryProperty].fileName;
 				const buffer = await executeFunctions.helpers.getBinaryDataBuffer(
-					itemIndex,
+					actualItemIndex,
 					source.binaryProperty,
 				);
 				const { filePath, cleanup } = await createTempFileFromBuffer(buffer, originalFilename);

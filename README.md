@@ -9,6 +9,13 @@ This repository contains a custom n8n node for comprehensive, local media proces
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
+## What's New in v1.4.0
+
+-   **Custom Output Field Names**: Configure binary output field names for better workflow organization
+-   **Enhanced Merge Node Support**: Seamlessly work with n8n's Merge node for multi-input operations
+-   **Automatic Resolution Handling**: Smart scaling for videos with different resolutions in transitions
+-   **Improved Error Messages**: Better debugging with detailed binary property information
+
 ## Why use MediaFX?
 
 -   **Privacy-Focused**: All processing happens locally on your n8n instance. Your media files never leave your server.
@@ -91,6 +98,14 @@ This is the main node for all media processing operations. You select a `resourc
 -   `Delete`: Remove a previously uploaded user font.
 
 ## Usage Examples
+
+### Working with Merge Node (New in v1.4.0)
+When using n8n's Merge node to combine multiple video inputs:
+
+1. Connect multiple video sources to a Merge node
+2. Set Merge node to "Combine All" mode
+3. In MediaFX node, set Binary Property names as `data1`, `data2`, etc. (matching Merge node output)
+4. MediaFX will automatically detect and process all merged inputs
 
 ### Convert Image to Video
 Create a 10-second video at 1920x1080 from a single image.

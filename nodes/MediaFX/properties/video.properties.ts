@@ -89,7 +89,8 @@ export const videoProperties: INodeProperties[] = [
 						name: 'binaryProperty',
 						type: 'string',
 						default: 'data',
-						description: 'Name of the binary property containing video data',
+						description: 'Name of the binary property from the previous node. If using Merge node, use data1, data2, etc.',
+						placeholder: 'e.g., data, data1, data2',
 						displayOptions: { show: { sourceType: ['binary'] } },
 					},
 				],
@@ -163,6 +164,8 @@ export const videoProperties: INodeProperties[] = [
 						name: 'binaryProperty',
 						type: 'string',
 						default: 'data',
+						description: 'Name of the binary property from the previous node',
+						placeholder: 'e.g., data',
 						displayOptions: { show: { sourceType: ['binary'] } },
 					},
 				],
@@ -238,7 +241,8 @@ export const videoProperties: INodeProperties[] = [
 						name: 'binaryProperty',
 						type: 'string',
 						default: 'data',
-						description: 'Name of the binary property containing video data',
+						description: 'Name of the binary property from the previous node. If using Merge node, use data1, data2, etc.',
+						placeholder: 'e.g., data, data1, data2',
 						displayOptions: { show: { sourceType: ['binary'] } },
 					},
 				],
@@ -324,7 +328,15 @@ export const videoProperties: INodeProperties[] = [
 					default: 'url',
 				},
 				{ displayName: 'Value', name: 'value', type: 'string', default: '', placeholder: 'https://example.com/video.mp4' , displayOptions: { show: { sourceType: ['url'] } }},
-				{ displayName: 'Binary Property', name: 'binaryProperty', type: 'string', default: 'data' , displayOptions: { show: { sourceType: ['binary'] } }},
+				{ 
+					displayName: 'Binary Property', 
+					name: 'binaryProperty', 
+					type: 'string', 
+					default: 'data',
+					description: 'Name of the binary property from the previous node',
+					placeholder: 'e.g., data',
+					displayOptions: { show: { sourceType: ['binary'] } }
+				},
 			],
 		} ],
 	},
@@ -367,5 +379,22 @@ export const videoProperties: INodeProperties[] = [
 			},
 		},
 		default: 1,
+	},
+	
+	// ===================
+	// OUTPUT FIELD NAME
+	// ===================
+	{
+		displayName: 'Output Field Name',
+		name: 'outputFieldName',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property where the output video will be stored',
+		placeholder: 'data',
 	},
 ]; 

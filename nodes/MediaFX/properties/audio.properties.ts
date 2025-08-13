@@ -378,4 +378,21 @@ export const audioProperties: INodeProperties[] = [
 		},
 		description: 'Duration of fade out effect in seconds',
 	},
+	
+	// ===================
+	// OUTPUT FIELD NAME
+	// ===================
+	{
+		displayName: 'Output Field Name',
+		name: 'outputFieldName',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['audio'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property where the output audio will be stored',
+		placeholder: 'data',
+	},
 ]; 

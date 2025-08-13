@@ -569,9 +569,12 @@ export class MediaFX implements INodeType {
 					const binaryData = await fs.readFile(outputPath);
 					const fileName = path.basename(outputPath);
 					const binary = await this.helpers.prepareBinaryData(binaryData, fileName);
+					
+					// Get the output field name from parameters (default to 'data')
+					const outputFieldName = this.getNodeParameter('outputFieldName', i, 'data') as string;
 
 					await fs.remove(outputPath); // Clean up temp file
-					returnData.push({ json: {}, binary: { data: binary }, pairedItem: { item: i } });
+					returnData.push({ json: {}, binary: { [outputFieldName]: binary }, pairedItem: { item: i } });
 				} else if (resultData) {
 					// Operation resulted in JSON data
 					returnData.push({

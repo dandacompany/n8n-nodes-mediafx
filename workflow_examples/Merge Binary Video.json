@@ -1,0 +1,160 @@
+{
+  "name": "Merge Binary Video",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "928dab95-6e1a-42dc-a249-cd01ea3b9b24",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "sourceImage": {
+          "source": {
+            "value": "https://www.hollywoodreporter.com/wp-content/uploads/2025/08/KPop-Demon-Hunters-Main-2025.jpg?w=1428"
+          }
+        },
+        "duration": 3,
+        "videoSize": {},
+        "outputFieldName": "data1"
+      },
+      "type": "CUSTOM.mediaFX",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "27302bb5-82d1-4745-a21b-567b1dcdab99",
+      "name": "ImageToVideo image"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "sourceImage": {
+          "source": {
+            "value": "https://i.scdn.co/image/ab67616d0000b2734dcb6c5df15cf74596ab25a4"
+          }
+        },
+        "videoSize": {},
+        "outputFieldName": "data2"
+      },
+      "type": "CUSTOM.mediaFX",
+      "typeVersion": 1,
+      "position": [
+        224,
+        112
+      ],
+      "id": "624db8ca-7b91-4ace-8244-d352bd6437f7",
+      "name": "ImageToVideo image1"
+    },
+    {
+      "parameters": {
+        "operation": "multiTransition",
+        "transitionSources": {
+          "sources": [
+            {
+              "sourceType": "binary",
+              "binaryProperty": "data1"
+            },
+            {
+              "sourceType": "binary",
+              "binaryProperty": "=data2"
+            }
+          ]
+        },
+        "transitionDuration": 0.5
+      },
+      "type": "CUSTOM.mediaFX",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -16
+      ],
+      "id": "043f7da7-7836-4a7c-9712-7f41f6c9c18a",
+      "name": "MultiTransition video"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "48e6c686-8191-4857-98a6-9176a9743e97",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "ImageToVideo image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ImageToVideo image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ImageToVideo image": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ImageToVideo image1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "MultiTransition video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "72b1d227-d484-4c83-9051-41c67d97e569",
+  "meta": {
+    "instanceId": "ae59e3c4dbc3b4aab3d81fc78280645903de4834ef0fa1a8e01178181c7a57a4"
+  },
+  "id": "9AHJlFJiYpzy8Vch",
+  "tags": []
+}

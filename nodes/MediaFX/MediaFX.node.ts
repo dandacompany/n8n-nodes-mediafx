@@ -26,6 +26,7 @@ import {
 	executeImageToVideo,
 	executeMerge,
 	executeMixAudio,
+	executeSeparateAudio,
 	executeStampImage,
 	executeMultiVideoTransition,
 	executeSingleVideoFade,
@@ -555,8 +556,68 @@ export class MediaFX implements INodeType {
 							);
 							break;
 						}
+
+						case 'separateAudio': {
+							const sourceParam = this.getNodeParameter('separateSource', i) as {
+								source: { sourceType: string; value: string; binaryProperty?: string };
+							};
+							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
+							cleanup = c;
+
+							const videoFormat = this.getNodeParameter('separateVideoFormat', i, 'mp4') as string;
+							const audioFormat = this.getNodeParameter('separateAudioFormat', i, 'mp3') as string;
+							const audioCodec = this.getNodeParameter('separateAudioCodec', i, 'copy') as string;
+							const audioBitrate = this.getNodeParameter('separateAudioBitrate', i, '192k') as string;
+
+							const result = await executeSeparateAudio.call(
+								this,
+								paths[0],
+								videoFormat,
+								audioFormat,
+								audioCodec,
+								audioBitrate,
+								i,
+							);
+
+							// Get output field names
+							const videoFieldName = this.getNodeParameter('separateVideoFieldName', i, 'video') as string;
+							const audioFieldName = this.getNodeParameter('separateAudioFieldName', i, 'audio') as string;
+
+							// Read and prepare both binary outputs
+							const videoBinaryData = await fs.readFile(result.videoPath);
+							const audioBinaryData = await fs.readFile(result.audioPath);
+
+							const videoFileName = path.basename(result.videoPath);
+							const audioFileName = path.basename(result.audioPath);
+
+							const videoBinary = await this.helpers.prepareBinaryData(videoBinaryData, videoFileName);
+							const audioBinary = await this.helpers.prepareBinaryData(audioBinaryData, audioFileName);
+
+							// Clean up temp files
+							await fs.remove(result.videoPath);
+							await fs.remove(result.audioPath);
+
+							// Push result with both binary outputs
+							returnData.push({
+								json: {
+									success: true,
+									operation: 'separateAudio',
+									videoFormat,
+									audioFormat,
+								},
+								binary: {
+									[videoFieldName]: videoBinary,
+									[audioFieldName]: audioBinary,
+								},
+								pairedItem: { item: i },
+							});
+
+							// Skip normal output processing for this operation
+							await cleanup();
+							continue;
+						}
 					}
-					
+
 					// Always cleanup after operations
 					await cleanup();
 				}

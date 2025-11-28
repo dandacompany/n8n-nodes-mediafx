@@ -9,8 +9,14 @@ This repository contains a custom n8n node for comprehensive, local media proces
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
-## What's New in v1.4.0
+## What's New in v1.4.1
 
+-   **Separate Audio**: New Video operation to split video into muted video and extracted audio track
+    - Returns both outputs in a single item with customizable field names
+    - Support for multiple video formats (MP4, MOV, AVI, MKV) and audio formats (MP3, AAC, WAV, FLAC)
+    - Audio codec options including copy (no re-encoding) for fastest processing
+
+### v1.4.0
 -   **Custom Output Field Names**: Configure binary output field names for better workflow organization
 -   **Enhanced Merge Node Support**: Seamlessly work with n8n's Merge node for multi-input operations
 -   **Automatic Resolution Handling**: Smart scaling for videos with different resolutions in transitions
@@ -71,6 +77,7 @@ This is the main node for all media processing operations. You select a `resourc
 -   `Trim`: Cut a video to a specific start and end time.
 -   `Transition`: Apply transition effects between multiple videos with automatic FFmpeg version detection and fallback support.
 -   `Fade`: Apply fade in/out effects to a single video.
+-   `Separate Audio`: Split a video into a muted video file and an extracted audio file, returning both outputs simultaneously.
 
 #### **Audio** Resource
 -   `Extract`: Extract the audio track from a video file into a specified format (MP3, WAV, AAC, FLAC).
@@ -199,6 +206,29 @@ Apply a watermark for a specific time range.
 }
 ```
 
+### Separate Audio from Video (New in v1.4.1)
+Split a video into a muted video and extracted audio track.
+
+```json
+{
+  "resource": "video",
+  "operation": "separateAudio",
+  "separateSource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data" }
+  },
+  "separateVideoFormat": "mp4",
+  "separateAudioFormat": "mp3",
+  "separateAudioCodec": "copy",
+  "separateAudioBitrate": "192k",
+  "separateVideoFieldName": "video",
+  "separateAudioFieldName": "audio"
+}
+```
+
+**Output**: Returns a single item with two binary properties:
+- `video`: The muted video file (no audio track)
+- `audio`: The extracted audio file
+
 ## Requirements
 
 -   n8n: Version 1.0 or higher recommended.
@@ -260,6 +290,12 @@ We welcome contributions! Please feel free to submit issues, feature requests, o
 - **Issues**: [GitHub Issues](https://github.com/dandacompany/n8n-nodes-mediafx/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/dandacompany/n8n-nodes-mediafx/discussions)
 - **YouTube**: Check out tutorials and demos on [단테랩스](https://www.youtube.com/@단테랩스)
+
+## Support the Project
+
+If you find this node useful, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/dante.labs)
 
 ## License
 

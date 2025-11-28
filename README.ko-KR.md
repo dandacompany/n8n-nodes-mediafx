@@ -9,8 +9,14 @@
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
-## v1.4.0의 새로운 기능
+## v1.4.1의 새로운 기능
 
+-   **오디오 분리**: 비디오를 무음 비디오와 추출된 오디오 트랙으로 분리하는 새로운 Video 작업
+    - 사용자 정의 가능한 필드명으로 두 출력을 단일 아이템으로 반환
+    - 다양한 비디오 포맷(MP4, MOV, AVI, MKV) 및 오디오 포맷(MP3, AAC, WAV, FLAC) 지원
+    - 가장 빠른 처리를 위한 copy(재인코딩 없음) 포함 오디오 코덱 옵션
+
+### v1.4.0
 -   **사용자 정의 출력 필드명**: 워크플로우 구성 개선을 위한 바이너리 출력 필드명 설정 가능
 -   **향상된 Merge 노드 지원**: 다중 입력 작업을 위한 n8n Merge 노드와의 원활한 연동
 -   **자동 해상도 처리**: 전환 효과에서 서로 다른 해상도의 비디오 스마트 스케일링
@@ -71,6 +77,7 @@
 -   `자르기`: 비디오를 특정 시작 및 종료 시간으로 자릅니다.
 -   `전환`: 자동 FFmpeg 버전 감지 및 대체 지원으로 여러 비디오 간 전환 효과를 적용합니다.
 -   `페이드`: 하나의 비디오에 페이드 인/아웃 효과를 적용합니다.
+-   `오디오 분리`: 비디오를 무음 비디오 파일과 추출된 오디오 파일로 분리하여 동시에 반환합니다.
 
 #### **오디오** 리소스
 -   `추출`: 비디오 파일에서 오디오 트랙을 지정된 형식(MP3, WAV, AAC, FLAC)으로 추출합니다.
@@ -199,6 +206,29 @@ n8n의 Merge 노드를 사용하여 여러 비디오 입력을 결합할 때:
 }
 ```
 
+### 비디오에서 오디오 분리 (v1.4.1 신규)
+비디오를 무음 비디오와 추출된 오디오 트랙으로 분리합니다.
+
+```json
+{
+  "resource": "video",
+  "operation": "separateAudio",
+  "separateSource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data" }
+  },
+  "separateVideoFormat": "mp4",
+  "separateAudioFormat": "mp3",
+  "separateAudioCodec": "copy",
+  "separateAudioBitrate": "192k",
+  "separateVideoFieldName": "video",
+  "separateAudioFieldName": "audio"
+}
+```
+
+**출력**: 두 개의 바이너리 속성을 가진 단일 아이템을 반환합니다:
+- `video`: 무음 비디오 파일 (오디오 트랙 없음)
+- `audio`: 추출된 오디오 파일
+
 ## 요구 사항
 
 -   n8n: 버전 1.0 이상 권장.
@@ -260,6 +290,12 @@ brew install ffmpeg
 - **이슈**: [GitHub Issues](https://github.com/dandacompany/n8n-nodes-mediafx/issues)
 - **토론**: [GitHub Discussions](https://github.com/dandacompany/n8n-nodes-mediafx/discussions)
 - **유튜브**: [단테랩스](https://www.youtube.com/@단테랩스)에서 튜토리얼과 데모를 확인하세요
+
+## 프로젝트 후원
+
+이 노드가 유용하셨다면, 커피 한 잔 후원을 고려해 주세요!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/dante.labs)
 
 ## 라이선스
 

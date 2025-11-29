@@ -9,7 +9,12 @@
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
-## v1.4.1의 새로운 기능
+## v1.4.2의 새로운 기능
+
+-   **버그 수정**: 비디오 소스가 올바르게 설정되지 않은 경우 오디오 분리 작업에서 "did not produce an output" 오류 수정
+    - 소스가 누락된 경우 명확한 오류 메시지와 함께 적절한 유효성 검사 추가
+
+### v1.4.1
 
 -   **오디오 분리**: 비디오를 무음 비디오와 추출된 오디오 트랙으로 분리하는 새로운 Video 작업
     - 사용자 정의 가능한 필드명으로 두 출력을 단일 아이템으로 반환

@@ -558,9 +558,16 @@ export class MediaFX implements INodeType {
 						}
 
 						case 'separateAudio': {
-							const sourceParam = this.getNodeParameter('separateSource', i) as {
-								source: { sourceType: string; value: string; binaryProperty?: string };
+							const sourceParam = this.getNodeParameter('separateSource', i, {}) as {
+								source?: { sourceType: string; value: string; binaryProperty?: string };
 							};
+							if (!sourceParam.source) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Video source is required. Please add a video source.',
+									{ itemIndex: i },
+								);
+							}
 							const { paths, cleanup: c } = await resolveInputs(this, i, [sourceParam.source]);
 							cleanup = c;
 

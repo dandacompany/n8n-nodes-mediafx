@@ -9,7 +9,12 @@ This repository contains a custom n8n node for comprehensive, local media proces
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
-## What's New in v1.4.1
+## What's New in v1.4.2
+
+-   **Bug Fix**: Fixed "did not produce an output" error in Separate Audio operation when video source is not properly configured
+    - Added proper validation with clear error message when source is missing
+
+### v1.4.1
 
 -   **Separate Audio**: New Video operation to split video into muted video and extracted audio track
     - Returns both outputs in a single item with customizable field names

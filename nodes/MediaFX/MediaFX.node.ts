@@ -26,6 +26,7 @@ import {
 	executeImageToVideo,
 	executeMerge,
 	executeMixAudio,
+	executeOverlayVideo,
 	executeSeparateAudio,
 	executeStampImage,
 	executeMultiVideoTransition,
@@ -622,6 +623,77 @@ export class MediaFX implements INodeType {
 							// Skip normal output processing for this operation
 							await cleanup();
 							continue;
+						}
+
+						case 'overlayVideo': {
+							const mainSourceParam = this.getNodeParameter('overlayMainSource', i, {}) as {
+								source?: { sourceType: string; value: string; binaryProperty?: string };
+							};
+							const overlaySourceParam = this.getNodeParameter('overlaySource', i, {}) as {
+								source?: { sourceType: string; value: string; binaryProperty?: string };
+							};
+
+							if (!mainSourceParam.source) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Main video source is required. Please add a main video source.',
+									{ itemIndex: i },
+								);
+							}
+							if (!overlaySourceParam.source) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Overlay video source is required. Please add an overlay video source.',
+									{ itemIndex: i },
+								);
+							}
+
+							const { paths: mainPaths, cleanup: mainCleanup } = await resolveInputs(this, i, [mainSourceParam.source]);
+							const { paths: overlayPaths, cleanup: overlayCleanup } = await resolveInputs(this, i, [overlaySourceParam.source]);
+							cleanup = async () => {
+								await mainCleanup();
+								await overlayCleanup();
+							};
+
+							// Get overlay options
+							const sizeMode = this.getNodeParameter('overlaySizeMode', i, 'percentage') as string;
+							const positionMode = this.getNodeParameter('overlayPositionMode', i, 'alignment') as string;
+							const overlayOptions: IDataObject = {
+								// Position options
+								positionMode,
+								// Alignment mode options
+								horizontalAlign: positionMode === 'alignment' ? this.getNodeParameter('overlayHorizontalAlign', i, 'center') as string : undefined,
+								verticalAlign: positionMode === 'alignment' ? this.getNodeParameter('overlayVerticalAlign', i, 'middle') as string : undefined,
+								paddingX: positionMode === 'alignment' ? this.getNodeParameter('overlayPaddingX', i, 0) as number : undefined,
+								paddingY: positionMode === 'alignment' ? this.getNodeParameter('overlayPaddingY', i, 0) as number : undefined,
+								// Coordinates mode options
+								x: positionMode === 'coordinates' ? this.getNodeParameter('overlayX', i, '0') as string : undefined,
+								y: positionMode === 'coordinates' ? this.getNodeParameter('overlayY', i, '0') as string : undefined,
+								// Size options
+								sizeMode,
+								widthPercent: sizeMode === 'percentage' ? this.getNodeParameter('overlayWidthPercent', i, 50) as number : undefined,
+								heightMode: sizeMode === 'percentage' ? this.getNodeParameter('overlayHeightMode', i, 'auto') as string : undefined,
+								heightPercent: sizeMode === 'percentage' ? this.getNodeParameter('overlayHeightPercent', i, 50) as number : undefined,
+								widthPixels: sizeMode === 'pixels' ? this.getNodeParameter('overlayWidthPixels', i, 640) as number : undefined,
+								heightPixels: sizeMode === 'pixels' ? this.getNodeParameter('overlayHeightPixels', i, -1) as number : undefined,
+								opacity: this.getNodeParameter('overlayOpacity', i, 1) as number,
+								enableTimeControl: this.getNodeParameter('overlayEnableTimeControl', i, false) as boolean,
+								startTime: this.getNodeParameter('overlayStartTime', i, 0) as number,
+								endTime: this.getNodeParameter('overlayEndTime', i, 0) as number,
+								audioHandling: this.getNodeParameter('overlayAudioHandling', i, 'main') as string,
+								mainVolume: this.getNodeParameter('overlayMainVolume', i, 1) as number,
+								overlayVolume: this.getNodeParameter('overlayOverlayVolume', i, 0.5) as number,
+								outputFormat: this.getNodeParameter('overlayOutputFormat', i, 'mp4') as string,
+							};
+
+							outputPath = await executeOverlayVideo.call(
+								this,
+								mainPaths[0],
+								overlayPaths[0],
+								overlayOptions,
+								i,
+							);
+							break;
 						}
 					}
 

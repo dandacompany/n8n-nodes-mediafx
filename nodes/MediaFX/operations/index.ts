@@ -8,4 +8,5 @@ export * from './separateAudio';
 export * from './multiVideoTransition';
 export * from './singleVideoFade';
 export * from './imageToVideo';
-export * from './stampImage'; 
+export * from './stampImage';
+export * from './overlayVideo'; 

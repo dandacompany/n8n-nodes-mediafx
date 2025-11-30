@@ -9,7 +9,18 @@ This repository contains a custom n8n node for comprehensive, local media proces
 <!-- Optional: Add a GIF of the node in action here -->
 <!-- <p align="center"><img src="link/to/your/demo.gif" alt="MediaFX Node Demo"></p> -->
 
-## What's New in v1.4.2
+## What's New in v1.5.0
+
+-   **Video Overlay**: New operation to overlay a video on top of another video as a layer
+    - **Flexible Positioning**: Choose between alignment presets (left/center/right, top/middle/bottom) or custom coordinates
+    - **Percentage-based Sizing**: Scale overlay as percentage of main video dimensions
+    - **Pixel-based Sizing**: Specify exact pixel dimensions with aspect ratio preservation
+    - **Opacity Control**: Adjust overlay transparency (0-1)
+    - **Time Control**: Display overlay for specific time ranges
+    - **Audio Handling**: Choose main audio, overlay audio, mix both, or no audio
+    - **FFmpeg Expressions**: Support for advanced positioning using FFmpeg expressions
+
+### v1.4.2
 
 -   **Bug Fix**: Fixed "did not produce an output" error in Separate Audio operation when video source is not properly configured
     - Added proper validation with clear error message when source is missing
@@ -83,6 +94,7 @@ This is the main node for all media processing operations. You select a `resourc
 -   `Transition`: Apply transition effects between multiple videos with automatic FFmpeg version detection and fallback support.
 -   `Fade`: Apply fade in/out effects to a single video.
 -   `Separate Audio`: Split a video into a muted video file and an extracted audio file, returning both outputs simultaneously.
+-   `Overlay Video`: Overlay a video on top of another video with flexible positioning and sizing options.
 
 #### **Audio** Resource
 -   `Extract`: Extract the audio track from a video file into a specified format (MP3, WAV, AAC, FLAC).
@@ -233,6 +245,58 @@ Split a video into a muted video and extracted audio track.
 **Output**: Returns a single item with two binary properties:
 - `video`: The muted video file (no audio track)
 - `audio`: The extracted audio file
+
+### Overlay Video (New in v1.5.0)
+Overlay a video on top of another video with flexible positioning.
+
+**Using Alignment Presets (Center with 50% width):**
+```json
+{
+  "resource": "video",
+  "operation": "overlayVideo",
+  "overlayMainSource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data1" }
+  },
+  "overlaySource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data2" }
+  },
+  "overlayPositionMode": "alignment",
+  "overlayHorizontalAlign": "center",
+  "overlayVerticalAlign": "middle",
+  "overlaySizeMode": "percentage",
+  "overlayWidthPercent": 50,
+  "overlayHeightMode": "auto",
+  "overlayOpacity": 0.8,
+  "overlayAudioHandling": "main",
+  "overlayOutputFormat": "mp4"
+}
+```
+
+**Using Custom Coordinates (Bottom-right corner):**
+```json
+{
+  "resource": "video",
+  "operation": "overlayVideo",
+  "overlayMainSource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data1" }
+  },
+  "overlaySource": {
+    "source": { "sourceType": "binary", "binaryProperty": "data2" }
+  },
+  "overlayPositionMode": "coordinates",
+  "overlayX": "main_w-overlay_w-20",
+  "overlayY": "main_h-overlay_h-20",
+  "overlaySizeMode": "pixels",
+  "overlayWidthPixels": 320,
+  "overlayHeightPixels": -1,
+  "overlayEnableTimeControl": true,
+  "overlayStartTime": 5,
+  "overlayEndTime": 30,
+  "overlayAudioHandling": "mix",
+  "overlayMainVolume": 1.0,
+  "overlayOverlayVolume": 0.3
+}
+```
 
 ## Requirements
 

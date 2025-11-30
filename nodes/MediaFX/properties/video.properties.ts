@@ -38,6 +38,11 @@ export const videoProperties: INodeProperties[] = [
 				value: 'separateAudio',
 				description: 'Split video into muted video and extracted audio track',
 			},
+			{
+				name: 'Overlay Video',
+				value: 'overlayVideo',
+				description: 'Overlay a video on top of another video as a layer',
+			},
 		],
 		default: 'merge',
 	},
@@ -333,10 +338,10 @@ export const videoProperties: INodeProperties[] = [
 					default: 'url',
 				},
 				{ displayName: 'Value', name: 'value', type: 'string', default: '', placeholder: 'https://example.com/video.mp4' , displayOptions: { show: { sourceType: ['url'] } }},
-				{ 
-					displayName: 'Binary Property', 
-					name: 'binaryProperty', 
-					type: 'string', 
+				{
+					displayName: 'Binary Property',
+					name: 'binaryProperty',
+					type: 'string',
 					default: 'data',
 					description: 'Name of the binary property from the previous node',
 					placeholder: 'e.g., data',
@@ -385,7 +390,7 @@ export const videoProperties: INodeProperties[] = [
 		},
 		default: 1,
 	},
-	
+
 	// ===================
 	// SEPARATE AUDIO FIELDS
 	// ===================
@@ -544,6 +549,459 @@ export const videoProperties: INodeProperties[] = [
 	},
 
 	// ===================
+	// OVERLAY VIDEO FIELDS
+	// ===================
+	{
+		displayName: 'Main Video Source',
+		name: 'overlayMainSource',
+		type: 'fixedCollection',
+		placeholder: 'Add Main Video',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		default: {},
+		options: [
+			{
+				displayName: 'Source',
+				name: 'source',
+				values: [
+					{
+						displayName: 'Source Type',
+						name: 'sourceType',
+						type: 'options',
+						options: [
+							{ name: 'URL', value: 'url' },
+							{ name: 'Binary Data', value: 'binary' },
+						],
+						default: 'url',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						placeholder: 'https://example.com/main-video.mp4',
+						displayOptions: { show: { sourceType: ['url'] } },
+					},
+					{
+						displayName: 'Binary Property',
+						name: 'binaryProperty',
+						type: 'string',
+						default: 'data',
+						description: 'Name of the binary property from the previous node',
+						placeholder: 'e.g., data, data1',
+						displayOptions: { show: { sourceType: ['binary'] } },
+					},
+				],
+			},
+		],
+		description: 'The main (background) video',
+	},
+	{
+		displayName: 'Overlay Video Source',
+		name: 'overlaySource',
+		type: 'fixedCollection',
+		placeholder: 'Add Overlay Video',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		default: {},
+		options: [
+			{
+				displayName: 'Source',
+				name: 'source',
+				values: [
+					{
+						displayName: 'Source Type',
+						name: 'sourceType',
+						type: 'options',
+						options: [
+							{ name: 'URL', value: 'url' },
+							{ name: 'Binary Data', value: 'binary' },
+						],
+						default: 'url',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						placeholder: 'https://example.com/overlay-video.mp4',
+						displayOptions: { show: { sourceType: ['url'] } },
+					},
+					{
+						displayName: 'Binary Property',
+						name: 'binaryProperty',
+						type: 'string',
+						default: 'data2',
+						description: 'Name of the binary property from the previous node',
+						placeholder: 'e.g., data2, overlay',
+						displayOptions: { show: { sourceType: ['binary'] } },
+					},
+				],
+			},
+		],
+		description: 'The overlay (foreground) video to place on top',
+	},
+	{
+		displayName: 'Position Mode',
+		name: 'overlayPositionMode',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		options: [
+			{ name: 'Alignment (Preset Positions)', value: 'alignment' },
+			{ name: 'Custom Coordinates', value: 'coordinates' },
+		],
+		default: 'alignment',
+		description: 'How to position the overlay video',
+	},
+	{
+		displayName: 'Horizontal Alignment',
+		name: 'overlayHorizontalAlign',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['alignment'],
+			},
+		},
+		options: [
+			{ name: 'Left', value: 'left' },
+			{ name: 'Center', value: 'center' },
+			{ name: 'Right', value: 'right' },
+		],
+		default: 'center',
+		description: 'Horizontal alignment of the overlay',
+	},
+	{
+		displayName: 'Vertical Alignment',
+		name: 'overlayVerticalAlign',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['alignment'],
+			},
+		},
+		options: [
+			{ name: 'Top', value: 'top' },
+			{ name: 'Middle', value: 'middle' },
+			{ name: 'Bottom', value: 'bottom' },
+		],
+		default: 'middle',
+		description: 'Vertical alignment of the overlay',
+	},
+	{
+		displayName: 'Padding X (px)',
+		name: 'overlayPaddingX',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['alignment'],
+			},
+		},
+		default: 0,
+		description: 'Horizontal padding/margin from the edge in pixels',
+	},
+	{
+		displayName: 'Padding Y (px)',
+		name: 'overlayPaddingY',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['alignment'],
+			},
+		},
+		default: 0,
+		description: 'Vertical padding/margin from the edge in pixels',
+	},
+	{
+		displayName: 'Position X',
+		name: 'overlayX',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['coordinates'],
+			},
+		},
+		default: '0',
+		description: 'X position for the overlay. Can be a number (pixels) or FFmpeg expression like (main_w-overlay_w)/2 for center.',
+		placeholder: '0 or (main_w-overlay_w)/2',
+	},
+	{
+		displayName: 'Position Y',
+		name: 'overlayY',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayPositionMode: ['coordinates'],
+			},
+		},
+		default: '0',
+		description: 'Y position for the overlay. Can be a number (pixels) or FFmpeg expression like (main_h-overlay_h)/2 for center.',
+		placeholder: '0 or (main_h-overlay_h)/2',
+	},
+	{
+		displayName: 'Size Mode',
+		name: 'overlaySizeMode',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		options: [
+			{ name: 'Percentage of Main Video', value: 'percentage' },
+			{ name: 'Pixels', value: 'pixels' },
+			{ name: 'Original Size', value: 'original' },
+		],
+		default: 'percentage',
+		description: 'How to specify the overlay size',
+	},
+	{
+		displayName: 'Width (%)',
+		name: 'overlayWidthPercent',
+		type: 'number',
+		typeOptions: {
+			minValue: 1,
+			maxValue: 100,
+			numberStepSize: 1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlaySizeMode: ['percentage'],
+			},
+		},
+		default: 50,
+		description: 'Width of the overlay as percentage of main video width (1-100%)',
+	},
+	{
+		displayName: 'Height Mode',
+		name: 'overlayHeightMode',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlaySizeMode: ['percentage'],
+			},
+		},
+		options: [
+			{ name: 'Auto (Keep Aspect Ratio)', value: 'auto' },
+			{ name: 'Percentage of Main Video', value: 'percentage' },
+		],
+		default: 'auto',
+		description: 'How to determine overlay height',
+	},
+	{
+		displayName: 'Height (%)',
+		name: 'overlayHeightPercent',
+		type: 'number',
+		typeOptions: {
+			minValue: 1,
+			maxValue: 100,
+			numberStepSize: 1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlaySizeMode: ['percentage'],
+				overlayHeightMode: ['percentage'],
+			},
+		},
+		default: 50,
+		description: 'Height of the overlay as percentage of main video height (1-100%)',
+	},
+	{
+		displayName: 'Width (px)',
+		name: 'overlayWidthPixels',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlaySizeMode: ['pixels'],
+			},
+		},
+		default: 640,
+		description: 'Width of the overlay in pixels. Set to -1 to maintain aspect ratio.',
+	},
+	{
+		displayName: 'Height (px)',
+		name: 'overlayHeightPixels',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlaySizeMode: ['pixels'],
+			},
+		},
+		default: -1,
+		description: 'Height of the overlay in pixels. Set to -1 to maintain aspect ratio.',
+	},
+	{
+		displayName: 'Opacity',
+		name: 'overlayOpacity',
+		type: 'number',
+		typeOptions: {
+			minValue: 0,
+			maxValue: 1,
+			numberStepSize: 0.1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		default: 1,
+		description: 'Opacity of the overlay video (0 = transparent, 1 = opaque)',
+	},
+	{
+		displayName: 'Enable Time Control',
+		name: 'overlayEnableTimeControl',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		default: false,
+		description: 'Whether to show the overlay only during a specific time range',
+	},
+	{
+		displayName: 'Start Time (seconds)',
+		name: 'overlayStartTime',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayEnableTimeControl: [true],
+			},
+		},
+		default: 0,
+		description: 'Time in seconds when the overlay should start appearing',
+	},
+	{
+		displayName: 'End Time (seconds)',
+		name: 'overlayEndTime',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayEnableTimeControl: [true],
+			},
+		},
+		default: 0,
+		description: 'Time in seconds when the overlay should stop appearing (0 = until end)',
+	},
+	{
+		displayName: 'Audio Handling',
+		name: 'overlayAudioHandling',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		options: [
+			{ name: 'Main Video Audio Only', value: 'main' },
+			{ name: 'Overlay Video Audio Only', value: 'overlay' },
+			{ name: 'Mix Both Audio Tracks', value: 'mix' },
+			{ name: 'No Audio', value: 'none' },
+		],
+		default: 'main',
+		description: 'How to handle audio from both videos',
+	},
+	{
+		displayName: 'Main Audio Volume',
+		name: 'overlayMainVolume',
+		type: 'number',
+		typeOptions: {
+			minValue: 0,
+			maxValue: 2,
+			numberStepSize: 0.1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayAudioHandling: ['mix'],
+			},
+		},
+		default: 1,
+		description: 'Volume level for main video audio (1 = 100%)',
+	},
+	{
+		displayName: 'Overlay Audio Volume',
+		name: 'overlayOverlayVolume',
+		type: 'number',
+		typeOptions: {
+			minValue: 0,
+			maxValue: 2,
+			numberStepSize: 0.1,
+		},
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+				overlayAudioHandling: ['mix'],
+			},
+		},
+		default: 0.5,
+		description: 'Volume level for overlay video audio (1 = 100%)',
+	},
+	{
+		displayName: 'Output Format',
+		name: 'overlayOutputFormat',
+		type: 'options',
+		displayOptions: {
+			show: {
+				resource: ['video'],
+				operation: ['overlayVideo'],
+			},
+		},
+		options: [
+			{ name: 'MP4', value: 'mp4' },
+			{ name: 'MOV', value: 'mov' },
+			{ name: 'AVI', value: 'avi' },
+			{ name: 'MKV', value: 'mkv' },
+		],
+		default: 'mp4',
+		description: 'Output format for the resulting video',
+	},
+
+	// ===================
 	// OUTPUT FIELD NAME
 	// ===================
 	{
@@ -553,11 +1011,11 @@ export const videoProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['video'],
-				operation: ['merge', 'trim', 'multiTransition', 'singleFade'],
+				operation: ['merge', 'trim', 'multiTransition', 'singleFade', 'overlayVideo'],
 			},
 		},
 		default: 'data',
 		description: 'Name of the binary property where the output video will be stored',
 		placeholder: 'data',
 	},
-]; 
+];
